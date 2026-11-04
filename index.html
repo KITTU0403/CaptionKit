@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CaptionKit – Auto Captions & Tenglish</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Dancing+Script:wght@700&family=Fredoka:wght@600&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@1,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bangers&family=Barlow+Condensed:wght@600;800&family=DM+Sans:wght@700&family=Inter:wght@700;900&family=Lora:wght@700&family=Outfit:wght@700;900&family=Raleway:wght@700;900&family=Rubik:wght@700;900&family=Sora:wght@700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@600;800&family=Dhurjati&family=Gurajada&family=Hind+Guntur:wght@600;700&family=NTR&family=Peddana&family=Ramaraja&family=Suravaram&family=Tenali+Ramakrishna&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Mandali&family=Montserrat:wght@700;900&family=Noto+Sans+Telugu:wght@600;800&family=Oswald:wght@600&family=Playfair+Display:wght@700&family=Poppins:wght@600;800&family=Ramabhadra&family=Roboto:wght@700&display=swap">
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--tx:#1d1d1b;--mu:#6b6a66;--bd:#e2e0d9;--ac:#e8590c;--ac2:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161615;--card:#201f1d;--tx:#f0eee8;--mu:#9a988f;--bd:#34332f;--ac:#ff8a3d;--ac2:#161615}}
+:root[data-theme="dark"]{--bg:#161615;--card:#201f1d;--tx:#f0eee8;--mu:#9a988f;--bd:#34332f;--ac:#ff8a3d;--ac2:#161615}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:24px;margin:0 0 2px}.sub{color:var(--mu);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:16px}
+.card h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);margin:0 0 10px}
+.stage{position:relative;background:#000;border-radius:10px;overflow:hidden;min-height:180px}
+video{width:100%;display:block;max-height:60vh}
+#ov{position:absolute;left:5%;right:5%;text-align:center;pointer-events:none;line-height:1.25;white-space:pre-wrap}
+#ov>span{padding:.1em .45em;border-radius:6px;-webkit-box-decoration-break:clone;box-decoration-break:clone;text-shadow:0 0 3px #000,0 0 3px #000,1px 1px 2px #000,-1px -1px 2px #000}
+#est{font-size:13px;color:var(--mu)}
+#ovc{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}#ov,#hook{display:none!important}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:8px;max-height:300px;overflow:auto;margin-bottom:10px}
+.tile{border:2px solid transparent;border-radius:10px;cursor:pointer;font-size:11px;color:var(--mu);text-align:center;padding:2px}.tile.on{border-color:var(--ac);color:var(--tx)}.tile canvas{width:100%;display:block;border-radius:8px;background:#141414}
+#hook{position:absolute;top:7%;left:50%;transform:translateX(-50%);max-width:90%;text-align:center;font-weight:800;padding:.25em .6em;border-radius:10px;pointer-events:none;display:none;line-height:1.2}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+label{font-size:12px;color:var(--mu);display:flex;flex-direction:column;gap:3px;flex:1;min-width:120px}
+select,input,textarea,button{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:7px 9px}
+input[type=color]{padding:2px;height:34px}input[type=range]{padding:0}
+button{cursor:pointer;background:var(--card)}
+button.p{background:var(--ac);color:var(--ac2);border-color:var(--ac);font-weight:600}
+button.p.on{background:#c92a2a;border-color:#c92a2a;color:#fff}
+#live{min-height:22px;color:var(--mu);font-style:italic;margin-top:8px}
+.cue{display:grid;grid-template-columns:58px 58px minmax(140px,1fr) auto;gap:6px;margin-bottom:6px}
+.acts{display:flex;gap:3px}.acts button{padding:4px 8px}
+.cue.act input{border-color:var(--ac)}
+.cue input{width:100%;padding:5px 6px}
+#cues{position:relative;max-height:340px;overflow-y:auto;overflow-x:auto}
+textarea{width:100%;min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.chk{flex-direction:row;align-items:center;gap:6px;color:var(--tx);font-size:14px}
+.note{font-size:12.5px;color:var(--mu);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>CaptionKit</h1>
+<p class="sub">Video ki auto captions – Telugu, Tenglish & 25+ languages. Free, unlimited, ee device lo‌nē run avutundi.</p>
+<div class="grid">
+<div>
+<div class="card">
+<h2>1 · Video</h2>
+<input type="file" id="file" accept="video/*,audio/*">
+<div class="stage" style="margin-top:10px"><video id="v" controls playsinline></video><canvas id="ovc"></canvas><div id="hook"></div><div id="ov"><span></span></div></div>
+<div id="live"></div>
+<div class="row">
+<label>Language (spoken in video)<select id="lang"></select></label>
+<label class="chk" style="flex:0 0 auto;margin-top:16px"><input type="checkbox" id="tg" checked> Tenglish (Roman)</label>
+<label>Tenglish spelling<select id="ts"><option value="natural">Natural (chala, kadu)</option><option value="exact">Exact (chaala, kaadu)</option></select></label>
+<button class="p" id="go" style="margin-top:16px">▶ Auto-generate captions</button>
+</div>
+<div class="row"><button class="p" id="exp">🎬 Export video with captions</button><button id="sv" style="display:none">⬇ Save video</button><button id="ed" style="display:none">✏ Edit captions</button><span id="est"></span></div>
+<div class="note">Chrome / Edge lo best ga work avutundi. Video play avutunnappudu captions live ga create avutayi. Telugu script lo vachina text ni Tenglish ga convert chestundi.</div>
+</div>
+<div class="card">
+<h2>2 · Style</h2>
+<input type="hidden" id="tpl" value="clean"><div class="gal" id="gal"></div>
+<div class="row" style="margin-top:0"><label>Animation<select id="an"><option value="pop">Pop</option><option value="slide">Slide Right</option><option value="fade">Fade</option><option value="reveal">Word by word</option><option value="none">None</option></select></label></div>
+<div class="note" style="margin:4px 0 10px">Template tile click cheyyandi. "Custom (my style)" tappa migilina templates ki fonts/colors built-in. Size, position, hook anni ee templates ki kuda apply avutayi.</div>
+<div class="row" style="margin-top:0"><label>Caption style preset<select id="pre"><option value="">Choose a style…</option><option value="hormozi">Viral – word highlight (green)</option><option value="mrbeast">Viral – big yellow</option><option value="boxed">Boxed – clean pro</option><option value="classic">Classic subtitle</option><option value="telugu">Telugu script</option></select></label></div>
+<div class="row" style="margin-top:0">
+<label>Font<select id="font"></select></label>
+<label>Size<input type="range" id="size" min="12" max="64" value="28"></label>
+<label>Position<select id="pos"><option value="bottom">Bottom</option><option value="middle">Middle</option><option value="top">Top</option></select></label>
+</div>
+<div class="row">
+<label>Text<input type="color" id="fg" value="#ffffff"></label>
+<label>Background<input type="color" id="bgc" value="#000000"></label>
+<label>BG opacity<input type="range" id="bga" min="0" max="100" value="65"></label>
+<label class="chk" style="flex:0 0 auto;margin-top:16px"><input type="checkbox" id="up"> UPPERCASE</label>
+<label>Highlight<input type="color" id="hl" value="#ffe500"></label>
+<label class="chk" style="flex:0 0 auto;margin-top:16px"><input type="checkbox" id="hlon"> Highlight spoken word</label></div>
+<div class="row"><label style="flex:2 1 220px">Hook text (video start lo kanipistundi)<input id="hk" placeholder="e.g. Ee mistake cheyyaddu!"></label><label>Show for<select id="hd"><option value="2">2 sec</option><option value="3" selected>3 sec</option><option value="4">4 sec</option><option value="5">5 sec</option></select></label><label>Hook color<input type="color" id="hc" value="#ffe500"></label></div>
+<div class="row" id="chips" style="margin-top:6px"></div>
+<div class="row"><label style="flex:1 1 100%">My words (Telugu=English, oka line ki okati) – e.g. తెలుగు=Telugu<textarea id="cd" style="min-height:60px" placeholder="వీడియో=video"></textarea></label>
+</div>
+</div>
+</div>
+<div>
+<div class="card">
+<h2>3 · Captions (editable)</h2>
+<div id="cues"></div>
+<div class="row"><button id="add">+ Add line</button><button id="clr">Clear all</button></div>
+<div class="row"><label>Shift all captions (sec, minus = earlier)<input type="number" id="sh" step="0.1" value="-0.3"></label><button id="shb" style="margin-top:16px">Apply shift</button></div>
+<div class="row"><label>Find (tappu word)<input id="fi"></label><label>Replace with<input id="fr"></label><button id="frb" style="margin-top:16px">Replace all</button></div>
+<div class="note">▶ = aa caption play chesi chudandi · S / E = video lo ippudu unna time ni start / end ga set chestayi · × = delete. Text edit chesi malli Export cheyyandi.</div>
+</div>
+<div class="card">
+<h2>Paste transcript → auto timing</h2>
+<textarea id="paste" placeholder="Oka line ki oka caption. Video length batti timing automatic ga set avutundi."></textarea>
+<div class="row"><button id="dist">Auto-time lines</button></div>
+</div>
+<div class="card">
+<h2>Export</h2>
+<div class="row" style="margin-top:0"><button id="srt">SRT</button><button id="vtt">VTT</button><button id="cp" class="p">Copy</button></div>
+<textarea id="out" readonly style="margin-top:8px"></textarea>
+<div class="note">Copy chesi .srt / .vtt file ga save cheyyandi – YouTube, Premiere, CapCut anni support chestayi.</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const v=$('v'),ov=$('ov'),span=ov.firstChild;
+const LANGS=[['te-IN','Telugu (తెలుగు)'],['en-IN','English (India)'],['hi-IN','Hindi'],['ta-IN','Tamil'],['kn-IN','Kannada'],['ml-IN','Malayalam'],['mr-IN','Marathi'],['bn-IN','Bengali'],['gu-IN','Gujarati'],['pa-IN','Punjabi'],['ur-IN','Urdu'],['en-US','English (US)'],['en-GB','English (UK)'],['es-ES','Spanish'],['fr-FR','French'],['de-DE','German'],['pt-BR','Portuguese'],['it-IT','Italian'],['ru-RU','Russian'],['ar-SA','Arabic'],['ja-JP','Japanese'],['ko-KR','Korean'],['zh-CN','Chinese'],['id-ID','Indonesian'],['tr-TR','Turkish']];
+const FONTS=['Inter','Poppins','Montserrat','Roboto','DM Sans','Sora','Outfit','Rubik','Raleway','Oswald','Barlow Condensed','Anton','Archivo Black','Bebas Neue','Bangers','Playfair Display','Lora','Noto Sans Telugu','Anek Telugu','Hind Guntur','Mandali','Ramabhadra','Gurajada','Ramaraja','Suravaram','Peddana','NTR','Dhurjati','Tenali Ramakrishna','system-ui'];
+const W400=['Anton','Bebas Neue','Archivo Black','Bangers','Mandali','Ramabhadra','Gurajada','Ramaraja','Suravaram','Peddana','NTR','Dhurjati','Tenali Ramakrishna'];
+LANGS.forEach(l=>$('lang').add(new Option(l[1],l[0])));
+FONTS.forEach(f=>{const o=new Option(f,f);o.style.fontFamily=f;$('font').add(o)});
+
+/* Telugu -> Tenglish */
+const C={'క':'k','ఖ':'kh','గ':'g','ఘ':'gh','ఙ':'ng','చ':'ch','ఛ':'chh','జ':'j','ఝ':'jh','ఞ':'ny','ట':'t','ఠ':'th','డ':'d','ఢ':'dh','ణ':'n','త':'t','థ':'th','ద':'d','ధ':'dh','న':'n','ప':'p','ఫ':'ph','బ':'b','భ':'bh','మ':'m','య':'y','ర':'r','ఱ':'r','ల':'l','ళ':'l','వ':'v','శ':'sh','ష':'sh','స':'s','హ':'h'};
+const V={'అ':'a','ఆ':'aa','ఇ':'i','ఈ':'ee','ఉ':'u','ఊ':'oo','ఋ':'ru','ఎ':'e','ఏ':'e','ఐ':'ai','ఒ':'o','ఓ':'o','ఔ':'au'};
+const M={'ా':'aa','ి':'i','ీ':'ee','ు':'u','ూ':'oo','ృ':'ru','ె':'e','ే':'e','ై':'ai','ొ':'o','ో':'o','ౌ':'au'};
+function tel2eng(s){const a=[...s];let o='';for(let i=0;i<a.length;i++){const c=a[i],n=a[i+1];
+if(C[c]!==undefined){if(n==='్'){o+=C[c];i++}else if(M[n]!==undefined){o+=C[c]+M[n];i++}else o+=C[c]+'a'}
+else if(V[c]!==undefined)o+=V[c];else if(c==='ం')o+='m';else if(c==='ః')o+='h';else if(c==='ఁ')o+='n';else o+=c}return o}
+const disp=t=>{let s=$('tg').checked?tel2eng(t):t;if($('tg').checked)s=s.charAt(0).toUpperCase()+s.slice(1);return $('up').checked?s.toUpperCase():s};
+
+/* cues */
+let cues=[],stopAt=null,rowEls=[],lastK=-1;
+const fmt=(t,sep)=>{t=Math.max(0,t);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60),ms=Math.round((t-Math.floor(t))*1000);const p=(n,l=2)=>String(n).padStart(l,'0');return `${p(h)}:${p(m)}:${p(s)}${sep}${p(ms>999?999:ms,3)}`};
+function render(){const box=$('cues');box.innerHTML='';rowEls=[];cues.sort((a,b)=>a.s-b.s);cues.forEach((c,i)=>{const r=document.createElement('div');r.className='cue';
+const mk=(val,fn,attrs)=>{const e=document.createElement('input');Object.assign(e,attrs||{});e.value=val;e.oninput=()=>{fn(e.value);out()};return e};
+const sI=mk(c.s.toFixed(1),x=>c.s=parseFloat(x)||0,{type:'number',step:.1}),eI=mk(c.e.toFixed(1),x=>c.e=parseFloat(x)||0,{type:'number',step:.1}),tI=mk($('tg').checked?tel2eng(c.t):c.t,x=>c.t=x);
+const act=document.createElement('div');act.className='acts';
+const bt=(l,ti,fn)=>{const b=document.createElement('button');b.textContent=l;b.title=ti;b.onclick=fn;act.append(b)};
+bt('▶','Play this caption',()=>{v.currentTime=Math.max(0,c.s-0.2);stopAt=c.e;v.play()});
+bt('S','Start = current video time',()=>{c.s=v.currentTime;sI.value=c.s.toFixed(1);out()});
+bt('E','End = current video time',()=>{c.e=v.currentTime;eI.value=c.e.toFixed(1);out()});
+bt('×','Delete',()=>{cues.splice(i,1);render()});
+r.append(sI,eI,tI,act);box.append(r);rowEls.push(r)});out()}
+function out(){markStale();$('out').dataset.n=cues.length;$('out').value=$('out').dataset.mode==='vtt'?vtt():srt()}
+const srt=()=>cues.map((c,i)=>`${i+1}\n${fmt(c.s,',')} --> ${fmt(c.e,',')}\n${disp(c.t)}\n`).join('\n');
+const vtt=()=>'WEBVTT\n\n'+cues.map(c=>`${fmt(c.s,'.')} --> ${fmt(c.e,'.')}\n${disp(c.t)}\n`).join('\n');
+$('srt').onclick=()=>{$('out').dataset.mode='srt';out()};$('vtt').onclick=()=>{$('out').dataset.mode='vtt';out()};
+$('cp').onclick=async()=>{const t=$('out');try{await navigator.clipboard.writeText(t.value)}catch(e){t.select();document.execCommand('copy')}$('cp').textContent='Copied ✓';setTimeout(()=>$('cp').textContent='Copy',1500)};
+$('add').onclick=()=>{const t=v.currentTime||0;cues.push({s:t,e:t+2,t:'New caption'});render()};
+$('clr').onclick=()=>{cues=[];render()};
+$('tg').onchange=()=>{render();show()};$('up').onchange=()=>{out();show();style()};
+$('dist').onclick=async()=>{const L=$('paste').value.split('\n').map(x=>x.trim()).filter(Boolean);if(!L.length)return;const D=v.duration;if(!D||!isFinite(D)){alert('Mundu video load cheyyandi.');return}
+let segs=[[0,D]];$('dist').textContent='Analyzing voice…';try{if(curFile){const s=await voiced();if(s.length)segs=s}}catch(_){}$('dist').textContent='Auto-time lines';
+const T=segs.reduce((a,s)=>a+s[1]-s[0],0),at=c=>{for(const s of segs){const d=s[1]-s[0];if(c<=d)return s[0]+c;c-=d}return segs[segs.length-1][1]};
+const tot=L.reduce((a,l)=>a+l.length,0);let c0=0;cues=L.map(l=>{const d=T*l.length/tot;const o={s:at(c0+0.01),e:at(Math.max(c0+d-0.01,c0+0.1)),t:l};c0+=d;return o});render()};
+
+/* overlay */
+function style(){const a=$('bga').value/100,h=$('bgc').value;const rgb=[1,3,5].map(i=>parseInt(h.substr(i,2),16)).join(',');
+ov.style.fontFamily=`"${$('font').value}","Noto Sans Telugu",system-ui,sans-serif`;ov.style.fontSize=$('size').value+'px';ov.style.color=$('fg').value;
+ov.style.fontWeight=W400.includes($('font').value)?'400':'700';
+span.style.background=`rgba(${rgb},${a})`;ov.style.top=ov.style.bottom='auto';
+const p=$('pos').value;if(p==='bottom')ov.style.bottom='8%';else if(p==='top')ov.style.top='8%';else{ov.style.top='50%';ov.style.transform='translateY(-50%)';return}ov.style.transform='none'}
+['font','size','pos','fg','bgc','bga'].forEach(i=>$(i).oninput=style);style();
+function actIdx(c,t,ws){const L=ws.map(w=>w.length+1),T=L.reduce((a,b)=>a+b,0),f=Math.min(0.999,Math.max(0,(t-c.s)/Math.max(0.2,c.e-c.s)));let acc=0;for(let i=0;i<ws.length;i++){acc+=L[i]/T;if(f<acc)return i}return ws.length-1}
+function hookTxt(t){const h=$('hk').value.trim();return h&&t<parseFloat($('hd').value)?disp(h):''}
+function show(){const t=v.currentTime;if(stopAt!==null&&t>=stopAt){v.pause();stopAt=null}const k=cues.findIndex(c=>t>=c.s&&t<=c.e),c=cues[k];
+const ws=c?disp(c.t).split(/\s+/):[],ai=c&&$('hlon').checked?actIdx(c,t,ws):-1,key=k+'|'+ai+'|'+(c?c.t:'')+$('hl').value+$('tg').checked+$('ts').value+$('up').checked+$('cd').value;
+if(key!==lastKey){lastKey=key;span.textContent='';ws.forEach((w,i)=>{const s=document.createElement('span');s.textContent=w+(i<ws.length-1?' ':'');if(i===ai)s.style.color=$('hl').value;span.append(s)});span.style.display=c?'inline':'none'}
+const ht=hookTxt(t),hc=$('hc').value;hook.style.display=ht?'block':'none';if(ht){hook.textContent=ht;hook.style.background=hc;hook.style.color=lum(hc)>0.55?'#000':'#fff';hook.style.fontFamily=ov.style.fontFamily;hook.style.fontSize=($('size').value*1.2)+'px'}
+rowEls.forEach((r,i)=>r.classList.toggle('act',i===k));if(k>=0&&k!==lastK&&rowEls[k]){const b=$('cues');b.scrollTop=rowEls[k].offsetTop-b.clientHeight/2}lastK=k}
+v.ontimeupdate=show;v.onseeked=show;
+$('file').onchange=e=>{const f=e.target.files[0];if(f){curFile=f;v.src=URL.createObjectURL(f);cues=[];render()}};
+
+/* auto speech recognition */
+let rec=null,running=false,segStart=null;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function begin(){rec=new SR();rec.lang=$('lang').value;rec.continuous=true;rec.interimResults=true;
+rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i],toks=tok(r[0].transcript),old=W_cur[i]||[];
+W_cur[i]=toks.map((w,j)=>old[j]?{w,t:old[j].t}:{w,t:Math.max(0,v.currentTime-LAG)});
+$('live').textContent=r.isFinal?'':'… '+disp(jn(toks.slice(-8)))}
+cues=build(allWords());render()};
+rec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){stop();alert('Speech recognition permission ivvandi (mic access).')}};
+rec.onend=()=>{flushW();if(running&&!v.paused&&!v.ended)begin()};
+let tr=null;try{if(gDest)tr=gDest.stream.getAudioTracks()[0];else{const s=v.captureStream?v.captureStream():null;tr=s&&s.getAudioTracks()[0]}}catch(_){}
+try{tr?rec.start(tr):rec.start()}catch(_){try{rec.start()}catch(__){}}}
+function stop(){running=false;try{rec&&rec.stop()}catch(_){}$('go').textContent='▶ Auto-generate captions';$('go').classList.remove('on');$('live').textContent=''}
+$('go').onclick=()=>{if(running){stop();v.pause();return}
+if(!SR){alert('Ee browser lo speech recognition ledu. Chrome leda Edge use cheyyandi.');return}
+if(!v.src){alert('Mundu video select cheyyandi.');return}
+W_done=[];W_cur={};cues=[];render();running=true;$('go').textContent='■ Stop';$('go').classList.add('on');v.currentTime=0;v.play().then(begin).catch(begin)};
+v.onended=stop;v.onpause=()=>{if(running&&v.paused&&!v.ended)stop()};
+/* word-level sync */
+let curFile=null,W_done=[],W_cur={};const LAG=0.6;
+const NOSP=()=>/^(ja|zh)/.test($('lang').value);
+const tok=t=>t.trim()?(NOSP()?[...t.replace(/\s+/g,'')]:t.trim().split(/\s+/)):[];
+const jn=a=>a.join(NOSP()?'':' ');
+const allWords=()=>W_done.concat(Object.keys(W_cur).sort((a,b)=>a-b).flatMap(k=>W_cur[k]));
+function flushW(){W_done=allWords();W_cur={}}
+function build(ws){const out=[];let cur=[];const max=NOSP()?14:7;
+const fl=()=>{if(cur.length){out.push({s:cur[0].t,t:jn(cur.map(x=>x.w)),_l:cur[cur.length-1].t});cur=[]}};
+ws.forEach(x=>{const p=cur[cur.length-1];if(p&&(x.t-p.t>1.3||cur.length>=max))fl();cur.push(x);if(/[.?!।]$/.test(x.w)&&cur.length>=3)fl()});fl();
+out.forEach((c,i)=>{const nx=out[i+1];const e=nx&&nx.s-c._l<1.2?nx.s-0.02:c._l+0.9;c.e=Math.max(e,c.s+0.5);delete c._l});return out}
+async function voiced(){const buf=await curFile.arrayBuffer();const a=new(window.AudioContext||window.webkitAudioContext)();const d=await a.decodeAudioData(buf);a.close();
+const x=d.getChannelData(0),h=Math.floor(d.sampleRate*0.05),n=Math.floor(x.length/h),rms=new Float32Array(n);
+for(let i=0;i<n;i++){let s=0;for(let j=i*h;j<(i+1)*h;j++)s+=x[j]*x[j];rms[i]=Math.sqrt(s/h)}
+const so=[...rms].sort((p,q)=>p-q),th=Math.max(so[Math.floor(n*0.95)]*0.12,0.004);
+const seg=[];let i=0;while(i<n){if(rms[i]>th){let j=i;while(j<n&&rms[j]>th)j++;seg.push([i,j]);i=j}else i++}
+const mg=[];for(const s of seg){const l=mg[mg.length-1];if(l&&s[0]-l[1]<8)l[1]=s[1];else mg.push([s[0],s[1]])}
+return mg.filter(s=>s[1]-s[0]>=3).map(s=>[s[0]*0.05,s[1]*0.05])}
+$('shb').onclick=()=>{const d=parseFloat($('sh').value)||0;cues.forEach(c=>{c.s=Math.max(0,c.s+d);c.e=Math.max(c.s+0.3,c.e+d)});render()};
+function markStale(){if(blobOut){blobOut=null;$('sv').style.display='none';$('est').textContent='Captions maarayi – malli Export cheyyandi'}}
+$('ed').onclick=()=>{v.pause();v.currentTime=0;$('cues').scrollIntoView({behavior:'smooth',block:'center'})};
+$('frb').onclick=()=>{const f=$('fi').value;if(!f)return;let n=0;cues.forEach(c=>{const b=$('tg').checked?tel2eng(c.t):c.t;if(b.includes(f)){c.t=b.split(f).join($('fr').value);n++}});render();$('est').textContent=n+' captions lo replace chesanu'};
+/* hook, presets, better Tenglish */
+const hook=$('hook'),lum=h=>(0.299*parseInt(h.substr(1,2),16)+0.587*parseInt(h.substr(3,2),16)+0.114*parseInt(h.substr(5,2),16))/255;let lastKey='';
+const PRE={hormozi:{font:'Montserrat',size:34,fg:'#ffffff',bgc:'#000000',bga:0,up:1,hl:'#22ff55',hlon:1},mrbeast:{font:'Anton',size:40,fg:'#ffe500',bgc:'#000000',bga:0,up:1,hl:'#ffffff',hlon:1},boxed:{font:'Inter',size:28,fg:'#ffffff',bgc:'#111111',bga:90,up:0,hl:'#ffd400',hlon:1},classic:{font:'Poppins',size:28,fg:'#ffffff',bgc:'#000000',bga:65,up:0,hl:'#ffe500',hlon:0},telugu:{font:'Noto Sans Telugu',size:30,fg:'#ffffff',bgc:'#000000',bga:60,up:0,hl:'#ffe500',hlon:0}};
+$('pre').onchange=()=>{const p=PRE[$('pre').value];if(!p)return;['font','size','fg','bgc','bga','hl'].forEach(k=>$(k).value=p[k]);$('up').checked=!!p.up;$('hlon').checked=!!p.hlon;style()};
+['Ee mistake cheyyaddu!','Idi telusukunte shock avutaru','Ee 3 tips mee life marchestayi','Aa secret evvaru chepparu','Ventane idi chudandi!'].forEach(h=>{const b=document.createElement('button');b.textContent=h;b.onclick=()=>{$('hk').value=h;markStale()};$('chips').append(b)});
+const LOAN={'వీడియో':'video','సబ్స్క్రైబ్':'subscribe','లైక్':'like','షేర్':'share','కామెంట్':'comment','ఛానల్':'channel','చానల్':'channel','ఫోన్':'phone','మొబైల్':'mobile','ఓకే':'ok','హలో':'hello','హాయ్':'hi','ఫ్రెండ్స్':'friends','బ్రో':'bro','థాంక్స్':'thanks','సూపర్':'super','యూట్యూబ్':'YouTube','ఇన్స్టాగ్రాం':'Instagram','వాట్సాప్':'WhatsApp','గూగుల్':'Google','కంపెనీ':'company','టైమ్':'time','నంబర్':'number','ప్రాబ్లమ్':'problem','బిజినెస్':'business','మనీ':'money','లైఫ్':'life','వర్క్':'work','ఆఫీస్':'office','తెలుగు':'Telugu','ఇంటర్నెట్':'internet','స్కూల్':'school','కాలేజ్':'college'};
+const TEL={'నేను':'nenu','మీరు':'meeru','మీకు':'meeku','నాకు':'naaku','నువ్వు':'nuvvu','మనం':'manam','అవును':'avunu','కాదు':'kaadu','లేదు':'ledu','ఉంది':'undi','ఉంటుంది':'untundi','ఏంటి':'enti','ఏమిటి':'emiti','ఎలా':'ela','ఎందుకు':'enduku','ఎక్కడ':'ekkada','ఎప్పుడు':'eppudu','ఇప్పుడు':'ippudu','చాలా':'chaala','బాగుంది':'bagundi','బాగా':'baaga','అండి':'andi','సరే':'sare','కూడా':'kooda','అంటే':'ante','కానీ':'kaani','అయితే':'ayithe','మరి':'mari','తెలుసు':'telusu'};
+let CUST={},Dk='',Dv={};
+function parseCust(){CUST={};$('cd').value.split('\n').forEach(l=>{const p=l.split('=');if(p.length>1&&p[0].trim())CUST[p[0].trim()]=p.slice(1).join('=').trim()})}
+function dict(){const k=$('ts').value+$('cd').value;if(k!==Dk){Dk=k;parseCust();Dv=Object.assign({},LOAN,$('ts').value==='exact'?{}:TEL,CUST)}return Dv}
+Object.assign(C,{'త':'th','థ':'th','ఠ':'th'});
+const LAB='పఫబభమ',VEL='కఖగఘ',SUF=['లో','ని','కి','తో','కు','ను','గా','లు','ల'];
+function rule(s){const a=[...s].filter(c=>c!=='\u200c'&&c!=='\u200d');let o='';for(let i=0;i<a.length;i++){const c=a[i],n=a[i+1];
+if(C[c]!==undefined){if(n==='్'){o+=C[c];i++}else if(M[n]!==undefined){o+=C[c]+M[n];i++}else o+=C[c]+'a'}
+else if(V[c]!==undefined)o+=V[c];
+else if(c==='ం')o+=!n||LAB.includes(n)?'m':VEL.includes(n)?'ng':'n';
+else if(c==='ః')o+='h';else if(c==='ఁ')o+='n';else o+=c}
+return $('ts').value==='natural'?o.replace(/aa/g,'a'):o}
+function word2eng(w){const D=dict();if(D[w])return D[w];for(const k in D){if(w.length>k.length&&w.startsWith(k)){const r=w.slice(k.length);if(SUF.includes(r))return D[k]+rule(r)}}return rule(w)}
+function tel2eng(s){return s.replace(/[\u0C00-\u0C7F\u200c\u200d]+/g,m=>word2eng(m.replace(/[\u200c\u200d]/g,'')))}
+$('ts').onchange=()=>render();$('cd').oninput=()=>{render()};
+['font','size','pos','fg','bgc','bga','hl','hlon','up','hk','hd','hc','pre'].forEach(i=>$(i).addEventListener('input',()=>markStale()));
+(function tick(){try{show();live()}catch(_){}requestAnimationFrame(tick)})();
+/* template engine */
+let refW=640;
+const DEF={f:'Poppins',w:700,i:0,z:1,c:'#ffffff',u:0,s:'#000000',sw:.1,g:null,b:null,r:0,ul:null},LI='#d9ff00';
+const TPL={
+custom:{n:'Custom (my style)',max:7,box:1,st:()=>({f:$('font').value,w:W400.includes($('font').value)?400:700,c:$('fg').value,u:$('up').checked,sw:.16})},
+clean:{n:'Classic Pro',max:6,st:()=>({sw:.12})},
+hormozi:{n:'Viral Highlight',max:3,st:(j,n,a)=>({f:'Montserrat',w:900,u:1,sw:.16,c:a?'#22ff55':'#fff',z:1.1})},
+mrbeast:{n:'Big Yellow',max:3,st:(j,n,a)=>({f:'Anton',w:400,u:1,sw:.14,c:a?'#fff':'#ffe500',z:1.3})},
+lyric:{n:'Lyrical Pop',max:3,stack:1,st:()=>({w:600,sw:.05})},
+cscript:{n:'Center Script',max:4,st:(j,n,a,e)=>j===e?{f:'Pacifico',w:400,c:'#ff2d3d',z:1.8,sw:.04}:{w:600,sw:.05}},
+lessons:{n:'Script Lessons',max:5,st:(j,n)=>j<Math.ceil(n/3)?{f:'Dancing Script',i:1,z:1.5,sw:.03}:{f:'Anton',w:400,u:1,c:'#e5161c',z:1.2,sw:.04}},
+wiggle:{n:'Hand Wiggle',max:5,wig:1,st:(j,n,a,e)=>j===e?{w:800,sw:.04}:{f:'Caveat',w:700,z:1.15,sw:.03}},
+handul:{n:'Hand Underline',max:5,st:(j,n,a,e)=>j===e?{w:800,ul:'#ff2d2d',sw:.04}:{f:'Caveat',w:700,z:1.15,sw:.03}},
+redhook:{n:'Red Hook',max:5,st:(j,n)=>j>=n-2&&n>2?{f:'Dancing Script',i:1,z:1.4,sw:.03}:{f:'Anton',w:400,u:1,c:'#ff2020',g:'#ff2020',z:1.3,sw:0}},
+glow:{n:'Glow Caps',max:4,st:()=>({f:'Montserrat',w:800,u:1,g:'#ffffff',sw:0,z:1.1})},
+iglow:{n:'Italic Glow',max:3,st:(j,n,a,e)=>j===e?{w:700,g:'#fff',sw:0}:{f:'Playfair Display',i:1,g:'#fff',sw:0,z:1.15}},
+mint:{n:'Mint Pop',max:4,st:(j,n,a,e)=>j===e?{w:900,c:'#5cf2b4',z:2,sw:.08}:{w:600,z:.8,sw:.05}},
+paper:{n:'Paper Tags',max:3,st:j=>({f:'Fredoka',w:600,b:'#c5603a',r:j%2?3:-3,sw:0})},
+ekdam:{n:'Ekdam',max:4,st:(j,n,a,e)=>j===e?{w:800,i:1,c:'#ff9d1c',z:1.9,sw:.05}:{f:'Caveat',i:1,z:1.05,sw:.03}},
+kinetic:{n:'Kinetic Stack',max:3,stack:1,st:(j,n,a,e)=>({f:'Anton',w:400,u:1,c:j===e?LI:'#fff',z:j===e?1.5:1.15,sw:.04})},
+trio:{n:'Trio Lockup',max:3,stack:1,st:(j,n,a,e)=>{const big=n===3?j===1:j===e;return big?{w:800,z:1.7,sw:.05}:j===0?{f:'Playfair Display',i:1,z:.6,sw:.02}:{w:600,u:1,z:.55,sw:.02}}},
+magazine:{n:'Magazine',max:4,st:(j,n,a,e)=>j===e?{f:'Montserrat',w:900,i:1,u:1,z:1.6,sw:.05}:{f:'Playfair Display',i:1,z:.85,sw:.03}},
+ink:{n:'Ink Flow',max:4,st:(j,n,a,e)=>j===e?{f:'Great Vibes',w:400,z:2.2,sw:.02}:{f:'Playfair Display',i:1,z:.9,sw:.02}},
+editorial:{n:'Editorial',max:5,st:(j,n,a,e)=>j===e?{w:700,u:1,z:.95,sw:.04}:{w:500,z:.85,sw:.03}},
+vmin:{n:'Viral Minimalist',max:3,st:(j,n,a,e)=>j===e?{w:900,u:1,c:'#16d964',z:1.8,sw:.07}:{w:600,z:.8,sw:.04}},
+duo:{n:'Script Duo',max:3,st:(j,n)=>j===n-1&&n>1?{f:'Pacifico',w:400,c:'#ff2a2a',z:1.3,sw:.1,s:'#fff'}:{f:'Anton',w:400,u:1,c:'#e8ff3a',z:1.5,sw:.1}},
+viral:{n:'Pop Viral',max:3,stack:1,st:(j,n,a,e)=>j===e?{f:'Anton',w:400,c:'#66ff1a',g:'#66ff1a',z:1.9,sw:.1}:{w:700,z:.85,sw:.08}}
+};
+const rr=(ctx,x,y,w,h,r)=>{ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);ctx.fill()};
+function drawTpl(ctx,W,H,c,t,id,an,sc,pos){
+const T=TPL[id]||TPL.clean,ws=disp(c.t).split(/\s+/).filter(Boolean);if(!ws.length)return;
+const L=ws.map(w=>w.length+1),TT=L.reduce((a,b)=>a+b,0);let acc=0;const fr=L.map(l=>{const f=acc/TT;acc+=l;return f});
+const D=Math.max(.2,c.e-c.s);let ai=0;for(let i=0;i<ws.length;i++)if(c.s+D*fr[i]<=t)ai=i;
+const g=Math.floor(ai/T.max),a0=g*T.max,gw=ws.slice(a0,a0+T.max),n=gw.length,la=ai-a0,tt=t-(c.s+D*fr[a0]);
+let em=0;gw.forEach((w,i)=>{if(w.length>=gw[em].length)em=i});
+const base=$('size').value*sc*1.15;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+const toks=gw.map((w,j)=>{const o=Object.assign({},DEF,T.st(j,n,j===la,em));if($('hlon').checked&&j===la&&id!=='hormozi'&&id!=='mrbeast')o.c=$('hl').value;
+const fs=base*o.z,txt=o.u?w.toUpperCase():w,font=`${o.i?'italic ':''}${o.w} ${fs}px "${o.f}","Noto Sans Telugu",system-ui,sans-serif`;ctx.font=font;
+return{o,j,fs,txt,font,w:ctx.measureText(txt).width+(o.b?fs*.5:0)}});
+const maxW=W*.88,lines=[];let cur=[],cw=0;
+toks.forEach(k=>{const sp=k.fs*.28;if(cur.length&&(T.stack||cw+sp+k.w>maxW)){lines.push(cur);cur=[];cw=0}cw+=(cur.length?sp:0)+k.w;cur.push(k)});if(cur.length)lines.push(cur);
+lines.forEach(l=>{l.h=Math.max(...l.map(k=>k.fs))*(T.stack?1.02:1.18);l.w=l.reduce((s,k,i)=>s+k.w+(i?k.fs*.28:0),0)});
+const tot=lines.reduce((s,l)=>s+l.h,0);let y=pos==='top'?H*.08:pos==='middle'?(H-tot)/2:H*.92-tot;
+const hx=$('bgc').value,rgb=[1,3,5].map(i=>parseInt(hx.substr(i,2),16)).join(',');
+for(const l of lines){let x=(W-l.w)/2;
+if(T.box){const pd=base*.4;ctx.fillStyle=`rgba(${rgb},${$('bga').value/100})`;rr(ctx,x-pd,y+l.h*.04,l.w+2*pd,l.h*.92,base*.25)}
+for(const k of l){const o=k.o,p=Math.min(1,Math.max(0,(tt-k.j*.05)/.22)),eo=p<1?1+2.70158*Math.pow(p-1,3)+1.70158*Math.pow(p-1,2):1;
+let al=1,s=1,dx=0;if(an==='pop'){s=Math.max(.01,eo);al=Math.min(1,p*3)}else if(an==='slide'){dx=-(1-p)*k.fs*1.6;al=p}else if(an==='fade')al=p;else if(an==='reveal'&&k.j>la)al=0;
+const wg=T.wig?Math.sin(t*9+k.j*1.7):0;
+ctx.save();ctx.globalAlpha=al;ctx.translate(x+k.w/2+dx,y+l.h/2+wg*k.fs*.05);ctx.rotate((o.r+wg*2)*Math.PI/180);ctx.scale(s,s);ctx.font=k.font;
+if(o.b){ctx.fillStyle=o.b;rr(ctx,-k.w/2,-k.fs*.62,k.w,k.fs*1.24,k.fs*.1)}
+if(o.sw&&!o.b){ctx.strokeStyle=o.s;ctx.lineWidth=k.fs*o.sw;ctx.strokeText(k.txt,0,0)}
+if(o.g){ctx.shadowColor=o.g;ctx.shadowBlur=k.fs*.45}
+ctx.fillStyle=o.c;ctx.fillText(k.txt,0,0);if(o.g)ctx.fillText(k.txt,0,0);
+if(o.ul){ctx.shadowBlur=0;ctx.fillStyle=o.ul;ctx.fillRect(-k.w/2,k.fs*.4,k.w,k.fs*.07)}
+ctx.restore();x+=k.w+k.fs*.28}
+y+=l.h}}
+function paint(ctx,W,H,t){const c=cues.find(c=>t>=c.s&&t<=c.e);if(c)drawTpl(ctx,W,H,c,t,$('tpl').value,$('an').value,W/refW,$('pos').value);const ht=hookTxt(t);if(ht)drawHook(ctx,W,H,ht)}
+const ovc=$('ovc'),octx=ovc.getContext('2d');
+function live(){const w=ovc.clientWidth,h=ovc.clientHeight,d=window.devicePixelRatio||1;if(!w||!h)return;const pw=Math.round(w*d),ph=Math.round(h*d);if(ovc.width!==pw||ovc.height!==ph){ovc.width=pw;ovc.height=ph}
+octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,pw,ph);
+const ar=(v.videoWidth/v.videoHeight)||(16/9);let cw=w,ch=w/ar;if(ch>h){ch=h;cw=h*ar}refW=cw;
+octx.setTransform(1,0,0,1,(w-cw)/2*d,(h-ch)/2*d);paint(octx,cw*d,ch*d,v.currentTime)}
+function tplFonts(){const s=new Set(['Poppins','Noto Sans Telugu']);Object.values(TPL).forEach(T=>[0,1,2,3].forEach(j=>[0,1].forEach(a=>{try{s.add(T.st(j,4,a,1).f)}catch(_){}})));s.delete(undefined);return[...s]}
+const loadFonts=()=>Promise.all(tplFonts().flatMap(f=>[`700 40px "${f}"`,`italic 700 40px "${f}"`].map(x=>document.fonts.load(x,'Aa తె').catch(()=>0))));
+const gal=$('gal');
+Object.keys(TPL).forEach(id=>{const d=document.createElement('div');d.className='tile';d.dataset.id=id;const cv=document.createElement('canvas');cv.width=300;cv.height=170;const lb=document.createElement('div');lb.textContent=TPL[id].n;d.append(cv,lb);d.onclick=()=>{$('tpl').value=id;selTpl()};gal.append(d)});
+function thumbs(){gal.querySelectorAll('.tile').forEach(d=>{const x=d.firstChild.getContext('2d');x.setTransform(1,0,0,1,0,0);x.fillStyle='#141414';x.fillRect(0,0,300,170);drawTpl(x,300,170,{s:0,e:3,t:'tum ek video banao'},1.6,d.dataset.id,'none',.62,'middle')})}
+function selTpl(){gal.querySelectorAll('.tile').forEach(d=>d.classList.toggle('on',d.dataset.id===$('tpl').value));try{markStale()}catch(_){}loadFonts().then(thumbs)}
+$('an').addEventListener('input',()=>markStale());
+selTpl();setTimeout(thumbs,1500);
+/* burned-in video export */
+let ac=null,gDest=null,gSrc=null,blobOut=null,blobName='';
+function graph(){if(ac)return;ac=new(window.AudioContext||window.webkitAudioContext)();gSrc=ac.createMediaElementSource(v);gDest=ac.createMediaStreamDestination();gSrc.connect(gDest);gSrc.connect(ac.destination)}
+function wrap(ctx,text,maxW){const lines=[];let cur='';for(const w of text.split(/\s+/)){const t=cur?cur+' '+w:w;if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
+function drawCap(ctx,W,H,txt,ai){const sc=W/(v.clientWidth||W),fs=$('size').value*sc*1.1,fam=$('font').value;
+ctx.font=`${W400.includes(fam)?400:700} ${fs}px "${fam}","Noto Sans Telugu",system-ui,sans-serif`;ctx.textBaseline='middle';ctx.lineJoin='round';
+const lines=wrap(ctx,txt,W*0.88),lh=fs*1.3,tot=lines.length*lh,p=$('pos').value;let gi=0;
+let y=p==='top'?H*0.07:p==='middle'?(H-tot)/2:H*0.93-tot;
+const hx=$('bgc').value,rgb=[1,3,5].map(i=>parseInt(hx.substr(i,2),16)).join(','),a=$('bga').value/100;
+for(const l of lines){const w=ctx.measureText(l).width,pd=fs*0.35,x=(W-w)/2;
+ctx.fillStyle=`rgba(${rgb},${a})`;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-pd,y+lh*0.04,w+2*pd,lh*0.92,fs*0.2);else ctx.rect(x-pd,y+lh*0.04,w+2*pd,lh*0.92);ctx.fill();
+ctx.strokeStyle='#000';ctx.lineWidth=fs*0.16;let xx=x;for(const w of l.split(' ')){ctx.strokeText(w,xx,y+lh/2);ctx.fillStyle=gi===ai?$('hl').value:$('fg').value;ctx.fillText(w,xx,y+lh/2);xx+=ctx.measureText(w+' ').width;gi++}y+=lh}}
+function drawHook(ctx,W,H,txt){const sc=W/refW,fs=$('size').value*sc*1.3,fam=$('font').value;ctx.font=`${W400.includes(fam)?400:800} ${fs}px "${fam}","Noto Sans Telugu",system-ui,sans-serif`;ctx.textBaseline='middle';
+const lines=wrap(ctx,txt,W*0.84),lh=fs*1.3,pd=fs*0.45,w=Math.max(...lines.map(l=>ctx.measureText(l).width))+2*pd,h=lines.length*lh+pd*0.6,x=(W-w)/2,y=H*0.07,hc=$('hc').value;
+ctx.fillStyle=hc;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,fs*0.3);else ctx.rect(x,y,w,h);ctx.fill();ctx.fillStyle=lum(hc)>0.55?'#000':'#fff';lines.forEach((l,i)=>ctx.fillText(l,(W-ctx.measureText(l).width)/2,y+pd*0.3+lh*(i+0.5)))}
+$('exp').onclick=async()=>{
+if(!v.src||!v.videoWidth){alert('Mundu video select cheyyandi.');return}
+if(!cues.length){alert('Mundu captions create cheyyandi.');return}
+if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){alert('Ee browser lo video export support ledu. Chrome use cheyyandi.');return}
+stop();const st=$('est');$('exp').disabled=true;$('sv').style.display='none';
+try{try{await document.fonts.load(`700 40px "${$('font').value}"`,cues.map(c=>disp(c.t)).join(' ').slice(0,200))}catch(_){}
+await loadFonts();graph();if(ac.state==='suspended')await ac.resume();gSrc.disconnect(ac.destination);
+const k=Math.min(1,1280/v.videoWidth),W=Math.round(v.videoWidth*k/2)*2,H=Math.round(v.videoHeight*k/2)*2;
+const cv=document.createElement('canvas');cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
+const stream=cv.captureStream(30);gDest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+const mt=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+const r2=new MediaRecorder(stream,mt?{mimeType:mt,videoBitsPerSecond:6e6}:{}),parts=[];
+r2.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};const fin=new Promise(r=>r2.onstop=r);
+v.pause();v.currentTime=0;await new Promise(r=>{v.onseeked=r;setTimeout(r,500)});v.onseeked=show;
+let raf;const loop=()=>{ctx.drawImage(v,0,0,W,H);const t=v.currentTime,c=cues.find(c=>t>=c.s&&t<=c.e);paint(ctx,W,H,t);st.textContent='Exporting… '+Math.round(t/v.duration*100)+'% (tab open ga unchandi)';raf=requestAnimationFrame(loop)};
+r2.start(250);v.muted=false;await v.play();loop();
+await new Promise(r=>{v.onended=r});
+cancelAnimationFrame(raf);r2.stop();await fin;
+blobOut=new Blob(parts,{type:(mt||'video/webm').split(';')[0]});blobName='captioned-video.'+((mt||'').includes('mp4')?'mp4':'webm');
+$('sv').style.display='inline-block';$('ed').style.display='inline-block';st.textContent='Ready ✓ – Save video click cheyyandi. Galti unte ✏ Edit captions chesi malli Export cheyyandi.';
+}catch(e){st.textContent='Export fail: '+(e.message||e)}
+finally{try{gSrc&&gSrc.connect(ac.destination)}catch(_){}v.onended=stop;$('exp').disabled=false}};
+$('sv').onclick=async()=>{try{const d=(window.claude&&claude.use)?await claude.use('downloads'):null;if(d){await d.save({filename:blobName,data:blobOut});return}const u=URL.createObjectURL(blobOut),a=document.createElement('a');a.href=u;a.download=blobName;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){if(!e||e.code!=='declined')alert('Save avvaledu: '+((e&&(e.message||e.code))||e))}};
+render();
+</script>
+</body>
+</html>
