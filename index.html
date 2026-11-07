@@ -70,6 +70,9 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 .cc span{overflow:hidden;text-overflow:ellipsis;pointer-events:none}.cc b{position:absolute;top:0;width:8px;height:100%;cursor:ew-resize}.cc .hl{left:0}.cc .hr{right:0}
 #ph{position:absolute;top:0;bottom:0;width:2px;background:var(--ac);pointer-events:none;z-index:3}#ph:before{content:'';position:absolute;top:0;left:-5px;border:6px solid transparent;border-top-color:var(--ac)}
 #wf{display:block;height:56px}
+.cutb{position:absolute;top:0;height:50px;border-radius:6px;border:1px solid #e5484d;background:repeating-linear-gradient(45deg,#e5484d66,#e5484d66 6px,#e5484d22 6px,#e5484d22 12px);pointer-events:none}
+.trow{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px}.trow span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trow button{padding:3px 8px}
+#wchips{gap:5px}#wchips button{padding:4px 9px}
 @media(max-width:980px){body{overflow:auto}.app{height:auto}.mid{flex-direction:column}.rail{width:auto;flex-direction:row;overflow:auto}.panel,.pl,.pr{width:auto;border:0;overflow:visible}.main{height:70vh}.gal{max-height:420px}.tl{height:300px}}
 </style>
 </head>
@@ -81,6 +84,7 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <button data-t="media" class="on"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4-2.5z"/></svg>Media</button>
 <button data-t="cc"><svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v12M8 18h8"/></svg>Captions</button>
 <button data-t="tpl"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Templates</button>
+<button data-t="trim"><svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="2.5"/><circle cx="6" cy="17" r="2.5"/><path d="M8 8.5l12 8M8 15.5l12-8"/></svg>Trim</button>
 <button data-t="exp"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Export</button>
 </nav>
 <aside class="panel pl">
@@ -102,6 +106,10 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <div id="cues"></div>
 <div class="row" style="margin-top:8px"><button id="add">+ Add line</button><button id="clr">Clear all</button></div>
 <div class="note">&#9654; play &middot; S / E = start / end ni ippati time ki set &middot; &times; delete. Tenglish word marchi click-out cheste nerchukuntundi.</div>
+<h3>Word styling</h3><div class="note">Caption select chesi (timeline lo click), words select chesi style cheyyandi.</div>
+<div class="row" id="wchips"></div>
+<div class="row"><label>Color<input type="color" id="wc" value="#ffd60a"></label><label>Size<select id="wz"><option value="1">Normal</option><option value="1.3" selected>Bigger</option><option value="1.6">Huge</option><option value="0.8">Smaller</option></select></label><label class="chk"><input type="checkbox" id="wg"> Glow</label><label class="chk"><input type="checkbox" id="wu"> UPPER</label></div>
+<div class="row"><button class="p" id="wapply">Apply to selected</button><button id="wclear">Clear</button></div>
 <h3>Timing tools</h3>
 <div class="row"><label>Shift all (sec)<input type="number" id="sh" step="0.1" value="-0.3"></label><button id="shb">Apply</button></div>
 <div class="row"><label>Find<input id="fi"></label><label>Replace<input id="fr"></label><button id="frb">Replace all</button></div>
@@ -109,6 +117,14 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <div class="row" style="margin-top:8px"><button id="dist">Auto-time lines</button></div></section>
 <section class="tab" id="t_tpl" hidden><h3>Templates</h3>
 <input id="gs" placeholder="Search 100+ templates (neon, gold, karaoke, telugu...)" style="width:100%;margin-bottom:10px"><input type="hidden" id="tpl" value="clean"><div class="gal" id="gal"></div></section>
+<section class="tab" id="t_trim" hidden><h3>Auto Trim</h3>
+<div class="note">Silence, filler words, repeated words / takes ni auto find chesi skip chestundi. Original video marchadu: preview + export lo cuts skip avutayi. Captions generate chesaka fillers/repeats dorukutayi.</div>
+<div class="row"><label>Min silence<select id="tms"><option value="0.4">0.4 sec</option><option value="0.6" selected>0.6 sec</option><option value="0.9">0.9 sec</option><option value="1.5">1.5 sec</option></select></label></div>
+<div class="row"><label class="chk"><input type="checkbox" id="tsl" checked> Silences</label><label class="chk"><input type="checkbox" id="tfl" checked> Fillers</label><label class="chk"><input type="checkbox" id="trp" checked> Repeats</label></div>
+<div class="row"><label style="flex:1 1 100%">Filler words<input id="trf" value="um, uh, umm, uhh, hmm, erm, ah, matlab"></label></div>
+<div class="row"><button class="p" id="tan" style="width:100%">Analyze</button></div>
+<div id="tsum" class="note"></div><div id="tlist"></div>
+<div class="row" style="margin-top:8px"><button id="tapply" class="p" style="width:100%">Apply trim (preview + export)</button></div></section>
 <section class="tab" id="t_exp" hidden><h3>Export</h3>
 <div class="row"><label>Resolution<select id="xr"><option value="0">Original</option><option value="720">720p HD</option><option value="1080" selected>1080p Full HD</option><option value="1440">1440p (2K)</option><option value="2160">2160p (4K)</option></select></label><label>Frame rate<select id="xf"><option value="30">30 fps</option><option value="60">60 fps</option></select></label></div>
 <div class="note">Real-time export (2 min video = 2 min). 4K / 60 fps ki strong PC + Chrome kavali.</div>
@@ -128,6 +144,7 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <div class="sl"><label>Position Y <b id="o_cy"></b></label><input type="range" id="cy" min="0" max="100" value="80" data-u="%"></div>
 <div class="sl"><label>Position X <b id="o_cx"></b></label><input type="range" id="cx" min="-50" max="50" value="0" data-u="%"></div>
 <div class="sl"><label>Opacity <b id="o_co"></b></label><input type="range" id="co" min="10" max="100" value="100" data-u="%"></div>
+<div class="row"><label class="chk"><input type="checkbox" id="afit" checked> Auto-fit (frame lo ki fit)</label></div>
 <div class="row"><label>Position preset<select id="pos"><option value="bottom">Bottom</option><option value="middle">Middle</option><option value="top">Top</option></select></label></div>
 <h3>Timing &amp; motion</h3>
 <div class="row"><label>Words per caption<select id="wpc"><option value="1">1 word</option><option value="2" selected>2 words</option><option value="3">3 words</option><option value="4">4 words</option><option value="0">Auto</option></select></label><label>Animation<select id="an"><option value="pop">Pop</option><option value="slide">Slide right</option><option value="fade">Fade</option><option value="reveal">Word by word</option><option value="none">None</option></select></label></div>
@@ -171,10 +188,10 @@ bt('▶','Play this caption',()=>{v.currentTime=Math.max(0,c.s-0.2);stopAt=c.e;v
 bt('S','Start = current video time',()=>{c.s=v.currentTime;sI.value=c.s.toFixed(1);out()});
 bt('E','End = current video time',()=>{c.e=v.currentTime;eI.value=c.e.toFixed(1);out()});
 bt('×','Delete',()=>{cues.splice(i,1);render()});
-r.append(sI,eI,tI,act);box.append(r);rowEls.push(r)});out();tlRender()}
+r.addEventListener('focusin',()=>{if(selC!==c){selC=c;wSel.clear();rowSel();tlRender();renderWords()}});r.append(sI,eI,tI,act);box.append(r);rowEls.push(r)});out();tlRender();try{renderWords()}catch(_){}}
 function out(){markStale();$('out').dataset.n=cues.length;$('out').value=$('out').dataset.mode==='vtt'?vtt():srt()}
-const srt=()=>cues.map((c,i)=>`${i+1}\n${fmt(c.s,',')} --> ${fmt(c.e,',')}\n${disp(c.t)}\n`).join('\n');
-const vtt=()=>'WEBVTT\n\n'+cues.map(c=>`${fmt(c.s,'.')} --> ${fmt(c.e,'.')}\n${disp(c.t)}\n`).join('\n');
+const srt=()=>tcues().map((c,i)=>`${i+1}\n${fmt(c.s,',')} --> ${fmt(c.e,',')}\n${disp(c.t)}\n`).join('\n');
+const vtt=()=>'WEBVTT\n\n'+tcues().map(c=>`${fmt(c.s,'.')} --> ${fmt(c.e,'.')}\n${disp(c.t)}\n`).join('\n');
 $('srt').onclick=()=>{$('out').dataset.mode='srt';out()};$('vtt').onclick=()=>{$('out').dataset.mode='vtt';out()};
 $('cp').onclick=async()=>{const t=$('out');try{await navigator.clipboard.writeText(t.value)}catch(e){t.select();document.execCommand('copy')}$('cp').textContent='Copied ✓';setTimeout(()=>$('cp').textContent='Copy',1500)};
 $('add').onclick=()=>{const t=v.currentTime||0;cues.push({s:t,e:t+2,t:'New caption'});render()};
@@ -396,7 +413,7 @@ const D=Math.max(.2,c.e-c.s);let ai=0;for(let i=0;i<ws.length;i++)if(c.s+D*fr[i]
 const mx=+$('wpc').value||T.max,g=Math.floor(ai/mx),a0=g*mx,gw=ws.slice(a0,a0+mx),n=gw.length,la=ai-a0,tt=t-(c.s+D*fr[a0]);
 let em=0;gw.forEach((w,i)=>{if(w.length>=gw[em].length)em=i});
 const base=$('size').value*sc*1.15;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
-const toks=gw.map((w,j)=>{const o=Object.assign({},DEF,T.st(j,n,j===la,em,la));if($('hlon').checked&&j===la&&!T.nohl&&id!=='hormozi'&&id!=='mrbeast')o.c=$('hl').value;
+const toks=gw.map((w,j)=>{const o=Object.assign({},DEF,T.st(j,n,j===la,em,la));if($('hlon').checked&&j===la&&!T.nohl&&id!=='hormozi'&&id!=='mrbeast')o.c=$('hl').value;const so=c.ws&&c.ws[a0+j];if(so){if(so.c){o.c=so.c;o.gp=o.gv=null}if(so.z&&so.z!==1)o.z*=so.z;if(so.g)o.g=so.g;if(so.u)o.u=1}
 const fs=base*o.z,txt=o.u?w.toUpperCase():w,font=`${o.i?'italic ':''}${o.w} ${fs}px "${o.f}","Noto Sans Telugu",system-ui,sans-serif`;ctx.font=font;
 ctx.letterSpacing=(o.ls||0)*fs+'px';const mw=ctx.measureText(txt).width;ctx.letterSpacing='0px';return{o,j,fs,txt,font,w:mw+(o.b?fs*.5:0)}});
 const maxW=W*.88,lines=[];let cur=[],cw=0;
@@ -404,7 +421,8 @@ toks.forEach(k=>{const sp=k.fs*.28;if(cur.length&&(T.stack||cw+sp+k.w>maxW)){lin
 lines.forEach(l=>{l.h=Math.max(...l.map(k=>k.fs))*(T.stack?1.02:1.18);l.w=l.reduce((s,k,i)=>s+k.w+(i?k.fs*.28:0),0)});
 const tot=lines.reduce((s,l)=>s+l.h,0);let y=pos==='middle'?(H-tot)/2:H*(+$('cy').value)/100-tot/2;const ox=pos==='middle'?0:W*(+$('cx').value)/100;
 const hx=$('bgc').value,rgb=[1,3,5].map(i=>parseInt(hx.substr(i,2),16)).join(',');
-const bw=Math.max(...lines.map(l=>l.w));for(const l of lines){const al=l[0].o.al;let x=(al==='l'?(W-bw)/2:al==='r'?(W+bw)/2-l.w:(W-l.w)/2)+ox;
+const bw=Math.max(...lines.map(l=>l.w)),fit=$('afit').checked?Math.min(1,W*.94/Math.max(bw,1),H*.9/Math.max(tot,1)):1;ctx.save();if(fit<1){const fx=W/2+ox,fy=y+tot/2;ctx.translate(fx,fy);ctx.scale(fit,fit);ctx.translate(-fx,-fy)}
+for(const l of lines){const al=l[0].o.al;let x=(al==='l'?(W-bw)/2:al==='r'?(W+bw)/2-l.w:(W-l.w)/2)+ox;
 if(T.lbg){const pd=base*.6;ctx.fillStyle=T.lbg;rr(ctx,x-pd,y+l.h*.02,l.w+2*pd,l.h*.96,l.h*.48)}
 if(T.box){const pd=base*.4;ctx.fillStyle=`rgba(${rgb},${$('bga').value/100})`;rr(ctx,x-pd,y+l.h*.04,l.w+2*pd,l.h*.92,base*.25)}
 for(const k of l){const o=k.o,p=Math.min(1,Math.max(0,(tt-k.j*.05)/.22)),eo=p<1?1+2.70158*Math.pow(p-1,3)+1.70158*Math.pow(p-1,2):1;
@@ -418,7 +436,7 @@ ctx.fillStyle=o.c;if(o.gp){const q=ctx.createLinearGradient(-k.w/2,0,k.w/2,0);q.
 ctx.fillText(k.txt,0,0);if(o.g)ctx.fillText(k.txt,0,0);
 if(o.ul){ctx.shadowBlur=0;ctx.fillStyle=o.ul;ctx.fillRect(-k.w/2,k.fs*.4,k.w,k.fs*.07)}
 ctx.restore();x+=k.w+k.fs*.28}
-y+=l.h}}
+y+=l.h}ctx.restore()}
 function paint(ctx,W,H,t){const c=cues.find(c=>t>=c.s&&t<=c.e);if(c)drawTpl(ctx,W,H,c,t,$('tpl').value,(window.__still?'none':$('an').value),W/refW,'live');const ht=hookTxt(t);if(ht)drawHook(ctx,W,H,ht)}
 const ovc=$('ovc'),octx=ovc.getContext('2d');
 function live(){const w=ovc.clientWidth,h=ovc.clientHeight,d=window.devicePixelRatio||1;if(!w||!h)return;const pw=Math.round(w*d),ph=Math.round(h*d);if(ovc.width!==pw||ovc.height!==ph){ovc.width=pw;ovc.height=ph}
@@ -485,12 +503,12 @@ $('thm').onclick=()=>{const r=document.documentElement,d=r.dataset.theme==='dark
 function rowSel(){rowEls.forEach((r,i)=>r.classList.toggle('sel',cues[i]===selC))}
 function tlRender(){const D=v.duration||12;pps=Math.min(pps,30000/D);const W=Math.round(D*pps);$('tlin').style.width=W+'px';
 const st=pps>=90?1:pps>=40?2:pps>=18?5:10;let h='';for(let t=0;t<=D;t+=st)h+=`<i style="left:${t*pps}px">${fT(t)}</i>`;$('ruler').innerHTML=h;
-$('vtrack').innerHTML=curFile?`<div class="clip vc" style="left:0;width:${W}px">${curFile.name}</div>`:'';
+$('vtrack').innerHTML=(curFile?`<div class="clip vc" style="left:0;width:${W}px">${curFile.name}</div>`:'')+cuts.filter(k=>k.on).map(k=>`<div class="cutb" style="left:${k.s*pps}px;width:${Math.max(2,(k.e-k.s)*pps)}px"></div>`).join('');
 const cc=$('cctrack');cc.innerHTML='';cues.forEach(c=>{const d=document.createElement('div');d.className='clip cc'+(c===selC?' sel':'');d.style.left=c.s*pps+'px';d.style.width=Math.max(20,(c.e-c.s)*pps-2)+'px';const sp=document.createElement('span');sp.textContent=view(c.t);d.append(sp);['l','r'].forEach(k=>{const e=document.createElement('b');e.className='h'+k;d.append(e)});d.onpointerdown=ev=>dragCue(ev,c);cc.append(d)});
 drawWave(W)}
 function dragCue(ev,c){ev.preventDefault();const cls=ev.target.className,mode=cls==='hl'?'l':cls==='hr'?'r':'m',x0=ev.clientX,s0=c.s,e0=c.e;let moved=0;snap();
 const mv=e=>{if(Math.abs(e.clientX-x0)>3)moved=1;const dx=(e.clientX-x0)/pps;if(mode==='m'){c.s=Math.max(0,s0+dx);c.e=c.s+(e0-s0)}else if(mode==='l')c.s=Math.max(0,Math.min(e0-.2,s0+dx));else c.e=Math.max(s0+.2,e0+dx);tlRender()};
-const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);selC=c;if(moved)render();else{hist.pop();v.currentTime=c.s+.01;tlRender()}rowSel();const r=rowEls[cues.indexOf(c)];if(r)r.scrollIntoView({block:'nearest'})};
+const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);selC=c;if(moved)render();else{hist.pop();v.currentTime=c.s+.01;tlRender()}rowSel();wSel.clear();renderWords();const r=rowEls[cues.indexOf(c)];if(r)r.scrollIntoView({block:'nearest'})};
 addEventListener('pointermove',mv);addEventListener('pointerup',up)}
 async function loadPeaks(){peaks=null;if(!curFile||curFile.size>3e8){tlRender();return}try{const buf=await curFile.arrayBuffer(),a=new(window.AudioContext||window.webkitAudioContext)(),d=await a.decodeAudioData(buf);a.close();const x=d.getChannelData(0),N=Math.min(6000,Math.ceil(d.duration*60)),k=Math.floor(x.length/N);VS=vadFrom(d);peaks=new Float32Array(N);for(let i=0;i<N;i++){let m=0;for(let j=i*k;j<(i+1)*k;j+=8){const q=Math.abs(x[j]);if(q>m)m=q}peaks[i]=m}}catch(_){}tlRender()}
 function drawWave(W){const c=$('wf'),H=56;c.width=W;c.height=H;c.style.width=W+'px';if(!peaks)return;const x=c.getContext('2d');x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--ac').trim()||'#7c5cff';const n=peaks.length;for(let px=0;px<W;px+=3){const m=peaks[Math.min(n-1,Math.floor(px/W*n))],h=Math.max(2,m*H*.95);x.fillRect(px,(H-h)/2,2,h)}}
@@ -556,6 +574,30 @@ snap();cues=buildW(words);selC=null;render();live.textContent='Whisper captions 
 catch(e){live.textContent='Whisper work avvaledu: '+((e&&e.message)||e)+'. Idi GitHub Pages / normal browser lo vadandi (claude.ai preview lo block avvachu).'}
 finally{btn.disabled=false}}
 $('gw').onclick=whisperGen;
+/* Auto Trim + word styling */
+let cuts=[],trimOn=false;const wSel=new Set();
+const NORM=s=>s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,'').trim();
+function cutBefore(t){let d=0;cuts.forEach(k=>{if(k.on)d+=Math.max(0,Math.min(t,k.e)-k.s)});return d}
+function tcues(){return trimOn?cues.filter(c=>!cuts.some(k=>k.on&&c.s>=k.s-.01&&c.e<=k.e+.01)).map(c=>({...c,s:c.s-cutBefore(c.s),e:c.e-cutBefore(c.e)})).filter(c=>c.e-c.s>.1):cues}
+function wordTimes(c){const ws=c.t.trim().split(/\s+/),L=ws.map(w=>w.length+1),T=L.reduce((a,b)=>a+b,0),D=c.e-c.s;let acc=0;return ws.map((w,i)=>{const s=c.s+D*acc/T;acc+=L[i];return{w,s,e:c.s+D*acc/T}})}
+function analyzeTrim(){const D=v.duration||0,sm=$('tsum');if(!D){sm.textContent='Mundu video load cheyyandi.';return}const minS=+$('tms').value,out=[];let warn='';
+if($('tsl').checked){if(VS&&VS.length){let prev=0;VS.forEach((s,i)=>{if(s[0]-prev>=minS)out.push({s:i?prev+.12:0,e:s[0]-.12,k:'silence'});prev=s[1]});if(D-prev>=minS)out.push({s:prev+.12,e:D,k:'silence'})}else warn='Silence detect avvaledu (audio analyse avvaledu). '}
+const F=$('trf').value.split(/[\s,]+/).filter(Boolean).map(x=>x.toLowerCase()),all=cues.flatMap(wordTimes);
+if($('tfl').checked)all.forEach(x=>{if(F.includes(NORM(x.w))||F.includes(NORM(view(x.w))))out.push({s:Math.max(0,x.s-.03),e:x.e+.05,k:'filler',w:x.w})});
+if($('trp').checked){for(let i=0;i<all.length-1;i++){const a=all[i],b=all[i+1];if(NORM(a.w)&&NORM(a.w)===NORM(b.w)&&b.s-a.e<.8)out.push({s:a.s,e:a.e,k:'repeat',w:a.w})}
+for(let i=0;i<cues.length-1;i++){const a=NORM(cues[i].t),b=NORM(cues[i+1].t);if(a.length>3&&(a===b||b.startsWith(a)))out.push({s:cues[i].s,e:cues[i].e,k:'retake',w:cues[i].t})}}
+out.sort((a,b)=>a.s-b.s);const m=[];out.forEach(k=>{const l=m[m.length-1];if(l&&k.s<=l.e+.05)l.e=Math.max(l.e,k.e);else m.push({...k})});
+cuts=m.filter(k=>k.e-k.s>=.12).map(k=>({...k,e:Math.min(k.e,D),on:true}));renderCuts(warn);tlRender()}
+function renderCuts(warn){const L=$('tlist');L.innerHTML='';let tot=0;cuts.forEach(k=>{if(k.on)tot+=k.e-k.s;const r=document.createElement('div');r.className='trow';const cb=document.createElement('input');cb.type='checkbox';cb.checked=k.on;cb.onchange=()=>{k.on=cb.checked;renderCuts();tlRender();out()};
+const lb=document.createElement('span');lb.textContent=k.k+(k.w?' "'+k.w+'"':'')+' \u00b7 '+fT(k.s,1)+'\u2013'+fT(k.e,1)+' ('+(k.e-k.s).toFixed(1)+'s)';const pb=document.createElement('button');pb.textContent='\u25b6';pb.onclick=()=>{v.currentTime=Math.max(0,k.s-1);v.play()};r.append(cb,lb,pb);L.append(r)});
+const D=v.duration||0;$('tsum').textContent=(warn||'')+(cuts.length?'Removes '+tot.toFixed(1)+'s of '+D.toFixed(1)+'s \u2192 '+(D-tot).toFixed(1)+'s final':'Emi dorakaledu (fillers/repeats kosam mundu captions generate cheyyandi).')}
+$('tan').onclick=analyzeTrim;
+$('tapply').onclick=()=>{trimOn=!trimOn;$('tapply').textContent=trimOn?'Trim ON \u2713 (click to turn off)':'Apply trim (preview + export)';out();tlRender()};
+(function skip(){if(trimOn&&!v.paused){const t=v.currentTime,k=cuts.find(k=>k.on&&t>=k.s&&t<k.e-.02);if(k)v.currentTime=k.e}requestAnimationFrame(skip)})();
+function renderWords(){const box=$('wchips');box.innerHTML='';if(!selC){box.innerHTML='<span class="note">Timeline lo oka caption select cheyyandi.</span>';return}
+disp(selC.t).split(/\s+/).forEach((w,i)=>{const b=document.createElement('button');b.textContent=w;const st=selC.ws&&selC.ws[i];if(wSel.has(i))b.className='p';if(st&&st.c)b.style.borderColor=st.c;b.onclick=()=>{wSel.has(i)?wSel.delete(i):wSel.add(i);renderWords()};box.append(b)})}
+$('wapply').onclick=()=>{if(!selC||!wSel.size)return;selC.ws=selC.ws||{};wSel.forEach(i=>{selC.ws[i]={c:$('wc').value,z:+$('wz').value,g:$('wg').checked?$('wc').value:null,u:$('wu').checked}});out();renderWords()};
+$('wclear').onclick=()=>{if(!selC||!selC.ws)return;(wSel.size?[...wSel]:Object.keys(selC.ws)).forEach(i=>delete selC.ws[i]);out();renderWords()};
 /* burned-in video export */
 
 let ac=null,gDest=null,gSrc=null,blobOut=null,blobName='';
