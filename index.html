@@ -73,7 +73,7 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 .cutb{position:absolute;top:0;height:50px;border-radius:6px;border:1px solid #e5484d;background:repeating-linear-gradient(45deg,#e5484d66,#e5484d66 6px,#e5484d22 6px,#e5484d22 12px);pointer-events:none}
 .trow{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px}.trow span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trow button{padding:3px 8px}
 #wchips{gap:5px}#wchips button{padding:4px 9px}
-@media(max-width:980px){body{overflow:auto}.app{height:auto}.mid{flex-direction:column}.rail{width:auto;flex-direction:row;overflow:auto}.panel,.pl,.pr{width:auto;border:0;overflow:visible}.main{height:70vh}.gal{max-height:420px}.tl{height:300px}}
+@media(max-width:980px){body{overflow-x:hidden;overflow-y:auto}.tbar{height:auto;flex-wrap:wrap;padding:8px 10px;justify-content:center}.tbar .sp{display:none}.tbar input[type=range]{width:80px}.tbody{height:190px;flex:none}.app{height:auto}.mid{flex-direction:column}.rail{width:auto;flex-direction:row;overflow:auto}.panel,.pl,.pr{width:auto;border:0;overflow:visible}.main{height:70vh}.gal{max-height:420px}.tl{height:auto}}
 </style>
 </head>
 <body>
@@ -111,6 +111,8 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <div class="row"><label>Color<input type="color" id="wc" value="#ffd60a"></label><label>Size<select id="wz"><option value="1">Normal</option><option value="1.3" selected>Bigger</option><option value="1.6">Huge</option><option value="0.8">Smaller</option></select></label><label class="chk"><input type="checkbox" id="wg"> Glow</label><label class="chk"><input type="checkbox" id="wu"> UPPER</label></div>
 <div class="row"><button class="p" id="wapply">Apply to selected</button><button id="wclear">Clear</button></div>
 <h3>Timing tools</h3>
+<div class="row"><button class="p" id="rtm" style="width:100%">Re-time with voice (word-exact)</button></div>
+<div class="note">Captions words ni audio lo asalu voice ki match chesi retime chestundi. Edit chesaka kuda run cheyochu.</div>
 <div class="row"><label>Shift all (sec)<input type="number" id="sh" step="0.1" value="-0.3"></label><button id="shb">Apply</button></div>
 <div class="row"><label>Find<input id="fi"></label><label>Replace<input id="fr"></label><button id="frb">Replace all</button></div>
 <h3>Paste transcript</h3><textarea id="paste" placeholder="Oka line ki oka caption. Voice unna chota auto-timing avutundi."></textarea>
@@ -235,7 +237,7 @@ function stop(){running=false;try{rec&&rec.stop()}catch(_){}$('go').textContent=
 $('go').onclick=()=>{if(running){wasAuto=false;stop();v.pause();return}
 if(!SR){alert('Ee browser lo speech recognition ledu. Chrome leda Edge use cheyyandi.');return}
 if(!v.src){alert('Mundu video select cheyyandi.');return}
-W_done=[];W_cur={};cues=[];render();lastAl=0;wasAuto=true;running=true;$('go').textContent='■ Stop';$('go').classList.add('on');v.currentTime=0;v.play().then(begin).catch(begin)};
+snap();W_done=[];W_cur={};cues=[];render();lastAl=0;wasAuto=true;running=true;$('go').textContent='■ Stop';$('go').classList.add('on');v.currentTime=0;v.play().then(begin).catch(begin)};
 v.onended=stop;v.onpause=()=>{if(running&&v.paused&&!v.ended)stop()};
 /* word-level sync */
 let curFile=null,W_done=[],W_cur={};const LAG=0.8;
@@ -443,12 +445,12 @@ function live(){const w=ovc.clientWidth,h=ovc.clientHeight,d=window.devicePixelR
 octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,pw,ph);
 const ar=(v.videoWidth/v.videoHeight)||(16/9);let cw=w,ch=w/ar;if(ch>h){ch=h;cw=h*ar}refW=cw;window.__still=v.paused;
 octx.setTransform(1,0,0,1,(w-cw)/2*d,(h-ch)/2*d);paint(octx,cw*d,ch*d,v.currentTime)}
-function tplFonts(){const s=new Set(['Poppins','Noto Sans Telugu']);Object.values(TPL).forEach(T=>[0,1,2,3].forEach(j=>[0,1].forEach(a=>{try{s.add(T.st(j,4,a,1).f)}catch(_){}})));s.delete(undefined);return[...s]}
-const loadFonts=()=>Promise.all(tplFonts().flatMap(f=>[`700 40px "${f}"`,`italic 700 40px "${f}"`].map(x=>document.fonts.load(x,'Aa తె').catch(()=>0))));
+function tplFonts(all){const s=new Set(['Poppins','Noto Sans Telugu',$('font').value]);(all?Object.values(TPL):[TPL[$('tpl').value]||TPL.clean]).forEach(T=>[0,1,2,3].forEach(j=>[0,1].forEach(a=>{try{s.add(T.st(j,4,a,1).f)}catch(_){}})));s.delete(undefined);return[...s]}
+const loadFonts=(all)=>Promise.all(tplFonts(all).flatMap(f=>[`700 40px "${f}"`,`italic 700 40px "${f}"`].map(x=>document.fonts.load(x,'Aa తె').catch(()=>0))));
 const gal=$('gal');
 Object.keys(TPL).forEach(id=>{const d=document.createElement('div');d.className='tile';d.dataset.id=id;const cv=document.createElement('canvas');cv.width=300;cv.height=170;const lb=document.createElement('div');lb.textContent=TPL[id].n;d.append(cv,lb);d.onclick=()=>{$('tpl').value=id;selTpl()};gal.append(d)});
 function thumbs(){gal.querySelectorAll('.tile').forEach(d=>{const x=d.firstChild.getContext('2d');x.setTransform(1,0,0,1,0,0);x.fillStyle='#141414';x.fillRect(0,0,300,170);drawTpl(x,300,170,{s:0,e:3,t:'tum ek video banao'},1.6,d.dataset.id,'none',1.05,'middle')})}
-function selTpl(){gal.querySelectorAll('.tile').forEach(d=>d.classList.toggle('on',d.dataset.id===$('tpl').value));try{markStale()}catch(_){}try{thumbs()}catch(_){}loadFonts().then(thumbs)}
+function selTpl(){gal.querySelectorAll('.tile').forEach(d=>d.classList.toggle('on',d.dataset.id===$('tpl').value));try{markStale()}catch(_){}try{thumbs()}catch(_){}loadFonts(window.__gal).then(thumbs)}
 $('an').addEventListener('input',()=>markStale());
 selTpl();setTimeout(thumbs,1500);let tT;try{document.fonts.addEventListener('loadingdone',()=>{clearTimeout(tT);tT=setTimeout(thumbs,300)})}catch(_){}
 /* Tenglish accuracy v2 */
@@ -497,7 +499,7 @@ const snap=()=>{hist.push(JSON.stringify(cues));if(hist.length>50)hist.shift()};
 function syncVals(){document.querySelectorAll('input[type=range]').forEach(r=>{const o=$('o_'+r.id);if(o)o.textContent=r.value+(r.dataset.u||'')})}
 document.querySelectorAll('input[type=range]').forEach(r=>r.addEventListener('input',syncVals));syncVals();
 $('pos').onchange=()=>{$('cy').value={top:14,middle:50,bottom:80}[$('pos').value];syncVals();markStale()};
-document.querySelectorAll('.rail button[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.rail button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.tab').forEach(t=>t.hidden=t.id!=='t_'+b.dataset.t)});
+document.querySelectorAll('.rail button[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.rail button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.tab').forEach(t=>t.hidden=t.id!=='t_'+b.dataset.t);if(b.dataset.t==='tpl'&&!window.__gal){window.__gal=1;loadFonts(1).then(thumbs)}});
 $('topexp').onclick=()=>document.querySelector('.rail button[data-t=exp]').click();
 $('thm').onclick=()=>{const r=document.documentElement,d=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=d?'light':'dark';tlRender()};
 function rowSel(){rowEls.forEach((r,i)=>r.classList.toggle('sel',cues[i]===selC))}
@@ -510,7 +512,7 @@ function dragCue(ev,c){ev.preventDefault();const cls=ev.target.className,mode=cl
 const mv=e=>{if(Math.abs(e.clientX-x0)>3)moved=1;const dx=(e.clientX-x0)/pps;if(mode==='m'){c.s=Math.max(0,s0+dx);c.e=c.s+(e0-s0)}else if(mode==='l')c.s=Math.max(0,Math.min(e0-.2,s0+dx));else c.e=Math.max(s0+.2,e0+dx);tlRender()};
 const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);selC=c;if(moved)render();else{hist.pop();v.currentTime=c.s+.01;tlRender()}rowSel();wSel.clear();renderWords();const r=rowEls[cues.indexOf(c)];if(r)r.scrollIntoView({block:'nearest'})};
 addEventListener('pointermove',mv);addEventListener('pointerup',up)}
-async function loadPeaks(){peaks=null;if(!curFile||curFile.size>3e8){tlRender();return}try{const buf=await curFile.arrayBuffer(),a=new(window.AudioContext||window.webkitAudioContext)(),d=await a.decodeAudioData(buf);a.close();const x=d.getChannelData(0),N=Math.min(6000,Math.ceil(d.duration*60)),k=Math.floor(x.length/N);VS=vadFrom(d);peaks=new Float32Array(N);for(let i=0;i<N;i++){let m=0;for(let j=i*k;j<(i+1)*k;j+=8){const q=Math.abs(x[j]);if(q>m)m=q}peaks[i]=m}}catch(_){}tlRender()}
+async function loadPeaks(){peaks=null;if(!curFile||curFile.size>3e8){tlRender();return}try{const buf=await curFile.arrayBuffer(),a=new(window.AudioContext||window.webkitAudioContext)(),d=await a.decodeAudioData(buf);a.close();const x=d.getChannelData(0),N=Math.min(6000,Math.ceil(d.duration*60)),k=Math.floor(x.length/N);VS=vadFrom(d);envFrom(d);peaks=new Float32Array(N);for(let i=0;i<N;i++){let m=0;for(let j=i*k;j<(i+1)*k;j+=8){const q=Math.abs(x[j]);if(q>m)m=q}peaks[i]=m}}catch(_){}tlRender()}
 function drawWave(W){const c=$('wf'),H=56;c.width=W;c.height=H;c.style.width=W+'px';if(!peaks)return;const x=c.getContext('2d');x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--ac').trim()||'#7c5cff';const n=peaks.length;for(let px=0;px<W;px+=3){const m=peaks[Math.min(n-1,Math.floor(px/W*n))],h=Math.max(2,m*H*.95);x.fillRect(px,(H-h)/2,2,h)}}
 v.addEventListener('loadedmetadata',()=>{$('stg').style.aspectRatio=v.videoWidth+'/'+v.videoHeight;const g=(a,b)=>b?g(b,a%b):a,k=g(v.videoWidth,v.videoHeight),w=v.videoWidth/k,h=v.videoHeight/k;$('ar').textContent=w<50?w+':'+h:(v.videoWidth/v.videoHeight).toFixed(2);pps=Math.max(10,Math.min(240,($('TL').clientWidth-30)/v.duration));$('tlz').value=pps;$('pn').textContent=curFile?curFile.name:'Untitled project';loadPeaks()});
 $('tlz').oninput=()=>{pps=+$('tlz').value;tlRender()};
@@ -548,7 +550,7 @@ const gapsList=()=>VS?VS.filter(s=>s[1]-s[0]>=.45&&!cues.some(c=>c.e>s[0]+.15&&c
 async function fillMissing(){if(!SR||!VS||busyFill)return;const g=gapsList();if(!g.length){$('live').textContent='Missing speech emi ledu ✓';return}busyFill=true;
 for(let n=0;n<g.length;n++){$('live').textContent='Missing speech recover chestunna… '+(n+1)+'/'+g.length;const t=await recSeg(g[n][0],g[n][1]);if(t)addAligned(t,g[n])}
 v.pause();busyFill=false;cues.sort((a,b)=>a.s-b.s);render();$('live').textContent='Recover ayyindi ✓'}
-v.addEventListener('ended',()=>{if(wasAuto){wasAuto=false;setTimeout(fillMissing,700)}});
+v.addEventListener('ended',()=>{if(wasAuto){wasAuto=false;setTimeout(async()=>{await fillMissing();retime()},700)}});
 $('fixm').onclick=()=>{if(!VS){$('live').textContent='Audio analyse avvaledu (file chala pedda leda audio ledu).';return}fillMissing()};
 /* Whisper AI (on-device) */
 const WL={te:'telugu',en:'english',hi:'hindi',ta:'tamil',kn:'kannada',ml:'malayalam',mr:'marathi',bn:'bengali',gu:'gujarati',pa:'punjabi',ur:'urdu',es:'spanish',fr:'french',de:'german',pt:'portuguese',it:'italian',ru:'russian',ar:'arabic',ja:'japanese',ko:'korean',zh:'chinese',id:'indonesian',tr:'turkish'};
@@ -598,6 +600,28 @@ function renderWords(){const box=$('wchips');box.innerHTML='';if(!selC){box.inne
 disp(selC.t).split(/\s+/).forEach((w,i)=>{const b=document.createElement('button');b.textContent=w;const st=selC.ws&&selC.ws[i];if(wSel.has(i))b.className='p';if(st&&st.c)b.style.borderColor=st.c;b.onclick=()=>{wSel.has(i)?wSel.delete(i):wSel.add(i);renderWords()};box.append(b)})}
 $('wapply').onclick=()=>{if(!selC||!wSel.size)return;selC.ws=selC.ws||{};wSel.forEach(i=>{selC.ws[i]={c:$('wc').value,z:+$('wz').value,g:$('wg').checked?$('wc').value:null,u:$('wu').checked}});out();renderWords()};
 $('wclear').onclick=()=>{if(!selC||!selC.ws)return;(wSel.size?[...wSel]:Object.keys(selC.ws)).forEach(i=>delete selC.ws[i]);out();renderWords()};
+/* qa fixes */
+{const _pl=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){const p=_pl.apply(this,arguments);if(p&&p.catch)p.catch(()=>{});return p}}
+/* word-exact retiming */
+let ENV=null,CUM=null;const ENVH=.02;
+function envFrom(d){const x=d.getChannelData(0),h=Math.floor(d.sampleRate*ENVH),n=Math.floor(x.length/h);ENV=new Float32Array(n);for(let i=0;i<n;i++){let s=0;for(let j=i*h;j<(i+1)*h;j+=2)s+=x[j]*x[j];ENV[i]=Math.sqrt(s/(h/2))}
+const so=[...ENV].sort((a,b)=>a-b),th=Math.max(so[Math.floor(n*.9)]*.12,.003);CUM=new Int32Array(n+1);for(let i=0;i<n;i++)CUM[i+1]=CUM[i]+(ENV[i]>th?1:0)}
+const pOf=t=>CUM[Math.min(CUM.length-1,Math.max(0,Math.floor(t/ENVH)))]*ENVH;
+function frN(n){n=Math.max(1,Math.min(n,CUM[CUM.length-1]));let lo=0,hi=CUM.length-2;while(lo<hi){const m=(lo+hi)>>1;if(CUM[m+1]>=n)hi=m;else lo=m+1}return lo}
+const tS=pc=>frN(Math.floor(pc/ENVH+1e-6)+1)*ENVH,tE=pc=>(frN(Math.ceil(pc/ENVH-1e-6))+1)*ENVH;
+function nearestOnset(t){let b=t,bd=1.5;(VS||[]).forEach(s=>{const d=Math.abs(s[0]-t);if(d<bd){bd=d;b=s[0]}});return b}
+function retime(){const lv=$('live');if(!ENV||!VS||!cues.length){lv.textContent='Re-time kosam captions + audio analyse kavali (pedda files ki skip avutundi).';return}
+snap();cues.sort((a,b)=>a.s-b.s);const W=[];cues.forEach(c=>wordTimes(c).forEach(x=>W.push({w:x.w,tc:x.s})));
+const syl=W.map(x=>Math.max(1,(tel2eng(x.w).toLowerCase().match(/[aeiouy]+/g)||[]).length)),Tv=CUM[CUM.length-1]*ENVH,S=syl.reduce((a,b)=>a+b,0),r=Math.min(.45,Math.max(.1,Tv/S));
+const out=[],segs=VS.filter(s=>s[1]-s[0]>=.2);let i=0,rr=r;
+for(let si=0;si<segs.length&&i<W.length;si++){const sg=segs[si];if(W[i].tc-sg[1]>2.5)continue;const ps=pOf(sg[0]),dur=pOf(sg[1])-ps;if(dur<.15)continue;const cap=dur/rr;let a=i,acc=0;
+while(i<W.length&&(i===a||(acc+syl[i]/2<=cap&&W[i].tc-sg[1]<=1.8))){acc+=syl[i];i++}
+let c=ps;for(let k=a;k<i;k++){const d=dur*syl[k]/acc;out.push({w:W[k].w,t:tS(c),e:tE(c+d),nu:k===a});c+=d}rr=Math.min(.45,Math.max(.1,.5*rr+.5*dur/acc))}
+let t0=out.length?out[out.length-1].e:0;while(i<W.length){const d=rr*syl[i];out.push({w:W[i].w,t:t0,e:t0+d,nu:true});t0+=d;i++}
+for(let i=0;i<out.length-1;i++){if(out[i+1].nu)continue;const k0=Math.round(out[i].e/ENVH);let km=k0,mn=1e9;for(let k=k0-5;k<=k0+5;k++)if(ENV[k]!=null&&ENV[k]<mn){mn=ENV[k];km=k}let av=0,c=0;for(let k=k0-12;k<=k0+12;k++)if(ENV[k]!=null){av+=ENV[k];c++}av/=c||1;
+if(mn<.55*av){const t=km*ENVH;if(t>out[i].t+.08&&t<out[i+1].e-.08){out[i].e=t;out[i+1].t=t}}}
+out.forEach(o=>{if(o.e<=o.t)o.e=o.t+.1;o.al=1});cues=buildW(out);selC=null;render();lv.textContent='Re-time ayyindi \u2713 ('+cues.length+' captions)'}
+$('rtm').onclick=retime;
 /* burned-in video export */
 
 let ac=null,gDest=null,gSrc=null,blobOut=null,blobName='';
