@@ -94,6 +94,7 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <div class="row"><label>Spoken language<select id="lang"></select></label></div>
 <div class="row"><label class="chk"><input type="checkbox" id="tg" checked> Tenglish (Roman)</label><label class="chk"><input type="checkbox" id="tl"> Telugish</label></div>
 <div class="row"><label>Tenglish spelling<select id="ts"><option value="natural">Natural (chala, kadu)</option><option value="exact">Exact (chaala, kaadu)</option></select></label></div>
+<div class="row"><label>Engine<select id="eng"><option value="auto" selected>Auto (phone → Whisper AI, PC → Browser)</option><option value="browser">Browser speech (Chrome PC, live)</option><option value="whisper">Whisper AI (on-device)</option></select></label></div>
 <div class="row"><button class="p" id="go" style="width:100%">&#9654; Auto-generate captions</button></div>
 <h3>Whisper AI (free, on-device)</h3>
 <div class="row"><label>Model<select id="wm"><option value="onnx-community/whisper-base_timestamped">Base (~200 MB, fast)</option><option value="onnx-community/whisper-small_timestamped">Small (~600 MB, better)</option></select></label></div>
@@ -225,7 +226,7 @@ $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;curFile=f;try{if(v
 let rec=null,running=false,segStart=null;
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function begin(){rec=new SR();rec.lang=$('lang').value;rec.continuous=true;rec.interimResults=true;
-rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i],toks=tok(r[0].transcript),old=W_cur[i]||[];
+rec.onresult=e=>{gotAny=true;for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i],toks=tok(r[0].transcript),old=W_cur[i]||[];
 W_cur[i]=toks.map((w,j)=>old[j]?{w,t:old[j].t,al:old[j].al}:{w,t:Math.max(0,v.currentTime-LAG)});if(r.isFinal&&!(W_cur[i][0]&&W_cur[i][0].al)){const al=alignFinal(W_cur[i]);if(al)W_cur[i]=al}
 $('live').textContent=r.isFinal?'':'… '+disp(jn(toks.slice(-8)))}
 cues=build(allWords());render()};
@@ -235,9 +236,10 @@ let tr=null;try{if(gDest)tr=gDest.stream.getAudioTracks()[0];else{const s=v.capt
 try{tr?rec.start(tr):rec.start()}catch(_){try{rec.start()}catch(__){}}}
 function stop(){running=false;try{rec&&rec.stop()}catch(_){}$('go').textContent='▶ Auto-generate captions';$('go').classList.remove('on');$('live').textContent=''}
 $('go').onclick=()=>{if(running){wasAuto=false;stop();v.pause();return}
+const eng=$('eng').value;if(eng==='whisper'||(eng==='auto'&&MOBILE)){$('live').textContent=MOBILE?'Phone lo browser speech recognition video audio ni vinadu (mic echo). Whisper AI tho generate chestunna (first time ~200MB download)…':'Whisper AI tho generate chestunna…';whisperGen();return}
 if(!SR){alert('Ee browser lo speech recognition ledu. Chrome leda Edge use cheyyandi.');return}
 if(!v.src){alert('Mundu video select cheyyandi.');return}
-snap();W_done=[];W_cur={};cues=[];render();lastAl=0;wasAuto=true;running=true;$('go').textContent='■ Stop';$('go').classList.add('on');v.currentTime=0;v.play().then(begin).catch(begin)};
+snap();gotAny=false;setTimeout(()=>{if(running&&!gotAny)$('live').textContent='\u26a0 10 sec ayyina captions raaledu: browser video audio ni vinatledu. Engine = Whisper AI select chesi try cheyyandi.'},10000);W_done=[];W_cur={};cues=[];render();lastAl=0;wasAuto=true;running=true;$('go').textContent='■ Stop';$('go').classList.add('on');v.currentTime=0;v.play().then(begin).catch(begin)};
 v.onended=stop;v.onpause=()=>{if(running&&v.paused&&!v.ended)stop()};
 /* word-level sync */
 let curFile=null,W_done=[],W_cur={};const LAG=0.8;
@@ -547,7 +549,7 @@ chk=setInterval(()=>{if(v.currentTime>=e+.6||v.ended||Date.now()-t0>(e-s+8)*1000
 function addAligned(txt,seg){const ws=tok(txt);if(!ws.length)return;const L=ws.map(w=>w.length+1),T=L.reduce((a,b)=>a+b,0);let cum=0;const W=ws.map((w,i)=>{const o={w,t:seg[0]+(seg[1]-seg[0])*cum/T};cum+=L[i];return o});
 build(W).forEach(c=>{c.e=Math.max(c.s+.4,Math.min(c.e,seg[1]+.15));cues.push(c)})}
 const gapsList=()=>VS?VS.filter(s=>s[1]-s[0]>=.45&&!cues.some(c=>c.e>s[0]+.15&&c.s<s[1]-.15)):[];
-async function fillMissing(){if(!SR||!VS||busyFill)return;const g=gapsList();if(!g.length){$('live').textContent='Missing speech emi ledu ✓';return}busyFill=true;
+async function fillMissing(){if(MOBILE&&$('eng').value!=='browser'){$('live').textContent='Phone lo ee option pani cheyadu (mic echo). Whisper AI vadandi.';return}if(!SR||!VS||busyFill)return;const g=gapsList();if(!g.length){$('live').textContent='Missing speech emi ledu ✓';return}busyFill=true;
 for(let n=0;n<g.length;n++){$('live').textContent='Missing speech recover chestunna… '+(n+1)+'/'+g.length;const t=await recSeg(g[n][0],g[n][1]);if(t)addAligned(t,g[n])}
 v.pause();busyFill=false;cues.sort((a,b)=>a.s-b.s);render();$('live').textContent='Recover ayyindi ✓'}
 v.addEventListener('ended',()=>{if(wasAuto){wasAuto=false;setTimeout(async()=>{await fillMissing();retime()},700)}});
@@ -622,6 +624,8 @@ for(let i=0;i<out.length-1;i++){if(out[i+1].nu)continue;const k0=Math.round(out[
 if(mn<.55*av){const t=km*ENVH;if(t>out[i].t+.08&&t<out[i+1].e-.08){out[i].e=t;out[i+1].t=t}}}
 out.forEach(o=>{if(o.e<=o.t)o.e=o.t+.1;o.al=1});cues=buildW(out);selC=null;render();lv.textContent='Re-time ayyindi \u2713 ('+cues.length+' captions)'}
 $('rtm').onclick=retime;
+/* mobile handling */
+const MOBILE=/Android|iPhone|iPad|iPod|Mobile|Silk/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));let gotAny=false;
 /* burned-in video export */
 
 let ac=null,gDest=null,gSrc=null,blobOut=null,blobName='';
