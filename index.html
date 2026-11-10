@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CaptionKit – Auto Captions & Tenglish</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Manrope:wght@700;800&family=Urbanist:wght@700;900&family=Lexend:wght@700;800&family=Figtree:wght@700;900&family=Bricolage+Grotesque:wght@700;800&family=Space+Grotesk:wght@700&family=Syne:wght@700;800&family=Epilogue:wght@800;900&family=Unbounded:wght@700;900&family=Big+Shoulders+Display:wght@800;900&family=League+Spartan:wght@700;900&family=Kanit:wght@700;800&family=Teko:wght@600&family=JetBrains+Mono:wght@700;800&family=IBM+Plex+Mono:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Staatliches&family=Russo+One&family=Rubik+Mono+One&family=Titan+One&family=Fugaz+One&family=Black+Han+Sans&family=Bowlby+One&family=Abril+Fatface&family=Alfa+Slab+One&family=DM+Serif+Display:ital@0;1&family=Bodoni+Moda:ital,wght@1,700&family=Libre+Baskerville:wght@700&family=Merriweather:wght@700;900&family=Satisfy&family=Kaushan+Script&family=Sacramento&family=Yellowtail&family=Shadows+Into+Light&family=Rock+Salt&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Telugu:wght@700;900&family=Baloo+Tammudu+2:wght@700;800&family=Mallanna&family=Ponnala&family=Suranna&family=Timmana&family=Ravi+Prakash&family=Gidugu&family=Sree+Krushnadevaraya&family=Lakki+Reddy&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@1,700&family=Orbitron:wght@700;900&family=Permanent+Marker&family=Press+Start+2P&family=Righteous&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Dancing+Script:wght@700&family=Fredoka:wght@600&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@1,700&family=Space+Mono:wght@700&display=swap">
@@ -119,7 +122,7 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <h3>Paste transcript</h3><textarea id="paste" placeholder="Oka line ki oka caption. Voice unna chota auto-timing avutundi."></textarea>
 <div class="row" style="margin-top:8px"><button id="dist">Auto-time lines</button></div></section>
 <section class="tab" id="t_tpl" hidden><h3>Templates</h3>
-<input id="gs" placeholder="Search 100+ templates (neon, gold, karaoke, telugu...)" style="width:100%;margin-bottom:10px"><input type="hidden" id="tpl" value="clean"><div class="gal" id="gal"></div></section>
+<input id="gs" placeholder="Search 150+ templates (neon, gold, karaoke, telugu...)" style="width:100%;margin-bottom:10px"><input type="hidden" id="tpl" value="clean"><div class="gal" id="gal"></div></section>
 <section class="tab" id="t_trim" hidden><h3>Auto Trim</h3>
 <div class="note">Silence, filler words, repeated words / takes ni auto find chesi skip chestundi. Original video marchadu: preview + export lo cuts skip avutayi. Captions generate chesaka fillers/repeats dorukutayi.</div>
 <div class="row"><label>Min silence<select id="tms"><option value="0.4">0.4 sec</option><option value="0.6" selected>0.6 sec</option><option value="0.9">0.9 sec</option><option value="1.5">1.5 sec</option></select></label></div>
@@ -410,6 +413,67 @@ teneon:G('Telugu Neon',{f:'Noto Sans Telugu',w:800,c:'#fff',s:'#00e5ff',sw:.06,g
 teclassic:G('Telugu Classic',{f:'Ramabhadra',w:400,c:'#fff',sw:.1,ac:'#ffd60a'}),
 tepop:G('Telugu Pop',{f:'Anek Telugu',w:800,c:'#fff',sw:.04,ab:'#e11d48',abc:'#fff',rad:.2})};
 Object.assign(TPL,MORE);
+const NEWF=['Plus Jakarta Sans','Manrope','Urbanist','Lexend','Figtree','Bricolage Grotesque','Space Grotesk','Syne','Epilogue','Unbounded','Big Shoulders Display','League Spartan','Kanit','Teko','Staatliches','Russo One','Rubik Mono One','Titan One','Fugaz One','Black Han Sans','Bowlby One','Abril Fatface','Alfa Slab One','DM Serif Display','Bodoni Moda','Libre Baskerville','Merriweather','JetBrains Mono','IBM Plex Mono','Satisfy','Kaushan Script','Sacramento','Yellowtail','Shadows Into Light','Rock Salt','Noto Serif Telugu','Baloo Tammudu 2','Mallanna','Ponnala','Suranna','Timmana','Ravi Prakash','Gidugu','Sree Krushnadevaraya','Lakki Reddy'];
+NEWF.forEach(f=>{const o=new Option(f,f);o.style.fontFamily=f;$('font').add(o)});
+W400.push('Staatliches','Russo One','Rubik Mono One','Titan One','Fugaz One','Black Han Sans','Bowlby One','Abril Fatface','Alfa Slab One','DM Serif Display','Satisfy','Kaushan Script','Sacramento','Yellowtail','Shadows Into Light','Rock Salt','Mallanna','Ponnala','Suranna','Timmana','Ravi Prakash','Gidugu','Sree Krushnadevaraya','Lakki Reddy');
+const M2={
+jakarta:G('Jakarta Clean',{f:'Plus Jakarta Sans',w:800,c:'#fff',sw:0,sh:1,ac:'#ffcf40'}),
+manrope:G('Manrope Pill',{f:'Manrope',w:800,c:'#fff',sw:0,lbg:'#000000cc',ac:'#7cf0c9'}),
+urban:G('Urban Punch',{f:'Urbanist',w:900,u:1,c:'#fff',s:'#000',sw:.1,ac:'#ff5a5f'}),
+lexgrad:G('Lexend Gradient',{f:'Lexend',w:800,gp:['#60a5fa','#a78bfa'],sw:0,sh:1}),
+figtag:G('Figtree Tag',{f:'Figtree',w:900,c:'#fff',sw:.08,ab:'#fde047',abc:'#111',rad:.3}),
+bricneon:G('Bricolage Neon',{f:'Bricolage Grotesque',w:800,c:'#fff',s:'#ff4ecd',sw:.05,g:'#ff4ecd'}),
+grotesk:G('Grotesk Terminal',{f:'Space Grotesk',w:700,u:1,c:'#fff',sw:0,ls:.04,lbg:'#0b0b0f',ac:'#00e5ff'}),
+syne:G('Syne Orange',{f:'Syne',w:800,c:'#fff',sw:.06,ac:'#ff7a00'}),
+epilogue:G('Epilogue Heavy',{f:'Epilogue',w:900,u:1,c:'#fff',s:'#000',sw:.16,ac:'#ffe600'}),
+unbounded:G('Unbounded Sunset',{f:'Unbounded',w:900,gp:['#f97316','#ec4899'],sw:0,sh:1,z:.8}),
+shoulders:G('Shoulders Red Bar',{f:'Big Shoulders Display',w:900,u:1,z:1.3,c:'#fff',sw:0,lbg:'#e11d48'}),
+spartan:G('Spartan White Bar',{f:'League Spartan',w:900,u:1,c:'#111',sw:0,lbg:'#fffffff0',ac:'#e11d48'}),
+kanit:G('Kanit Cyan',{f:'Kanit',w:800,u:1,c:'#fff',s:'#000',sw:.14,ac:'#22d3ee'}),
+teko:G('Teko Yellow',{f:'Teko',w:600,u:1,z:1.4,c:'#ffd60a',s:'#000',sw:.12}),
+staat:G('Staatliches Violet',{f:'Staatliches',w:400,u:1,c:'#fff',sw:0,ls:.05,lbg:'#7c3aed'}),
+russo:G('Russo Blue',{f:'Russo One',w:400,u:1,c:'#fff',s:'#1d4ed8',sw:.18}),
+rubmono:G('Rubik Mono',{f:'Rubik Mono One',w:400,u:1,z:.75,c:'#fff',sw:0,sh:1,ac:'#f43f5e'}),
+titan:G('Titan Orange',{f:'Titan One',w:400,c:'#fff',s:'#f97316',sw:.2,sh:1}),
+fugaz:G('Fugaz Glow',{f:'Fugaz One',w:400,gv:['#ffffff','#a5b4fc'],sw:0,g:'#6366f1'}),
+hanbold:G('Han Bold',{f:'Black Han Sans',w:400,c:'#fff',s:'#000',sw:.14,ac:'#fb7185'}),
+bowlby:G('Bowlby Gold',{f:'Bowlby One',w:400,u:1,z:.85,c:'#fde047',s:'#7c2d12',sw:.14,sh:1}),
+abril:G('Abril Display',{f:'Abril Fatface',w:400,c:'#fff',sw:0,sh:1,z:1.15,ac:'#fbbf24'}),
+alfa:G('Alfa Slab',{f:'Alfa Slab One',w:400,c:'#fff',s:'#1e293b',sw:.16,ac:'#f43f5e'}),
+dmserif:G('DM Serif',{f:'DM Serif Display',w:400,c:'#fff',sw:0,sh:1,z:1.2}),
+dmserifi:G('DM Serif Italic',{f:'DM Serif Display',w:400,i:1,c:'#ffe4c4',sw:0,sh:1,z:1.2}),
+bodoni:G('Bodoni Glow',{f:'Bodoni Moda',w:700,i:1,c:'#fff',sw:0,g:'#ffffffaa',z:1.1}),
+baskerv:G('Baskerville Subtitle',{f:'Libre Baskerville',w:700,c:'#fff',sw:0,lbg:'#00000099',max:4}),
+merri:G('Merriweather News',{f:'Merriweather',w:900,c:'#fff',sw:0,sh:1,ac:'#fcd34d'}),
+devgreen:G('Dev Terminal',{f:'JetBrains Mono',w:800,c:'#a3e635',sw:0,lbg:'#0a0a0a',max:3}),
+plex:G('Plex Highlight',{f:'IBM Plex Mono',w:700,c:'#fff',sw:0,ab:'#2563eb',abc:'#fff',rad:.1}),
+satisfy:G('Satisfy Script',{f:'Satisfy',w:400,c:'#fff',s:'#000',sw:.08,z:1.3}),
+kaushan:G('Kaushan Yellow',{f:'Kaushan Script',w:400,c:'#ffd60a',s:'#000',sw:.1,z:1.2}),
+sacra:G('Sacramento Glow',{f:'Sacramento',w:400,c:'#fff',sw:0,g:'#ffffffcc',z:1.9}),
+yellowt:G('Yellowtail Peach',{f:'Yellowtail',w:400,gv:['#ffe29f','#ff719a'],sw:0,sh:1,z:1.5}),
+sketch:G('Sketch Note',{f:'Shadows Into Light',w:400,c:'#fff',sw:.08,sh:1,z:1.6}),
+rocksalt:G('Rock Salt Marker',{f:'Rock Salt',w:400,c:'#fff',s:'#000',sw:.12,z:.85}),
+glassbar:G('Glass Bar',{f:'Plus Jakarta Sans',w:700,c:'#fff',sw:0,lbg:'#ffffff2e',ac:'#fde047'}),
+cinzgold:G('Cinzel Gold Bar',{f:'Cinzel',w:700,u:1,c:'#f5d98b',sw:0,ls:.1,lbg:'#000000b3'}),
+orbitk:G('Orbit Karaoke',{f:'Orbitron',w:700,u:1,c:'#fff',fut:'#64748b',ac:'#00e5ff',ag:'#00e5ff',sw:0}),
+sticker:G('Sticker White',{f:'Poppins',w:900,c:'#111',s:'#fff',sw:.3}),
+stickery:G('Sticker Yellow',{f:'Anton',w:400,u:1,c:'#111',s:'#ffd60a',sw:.3}),
+bebasghost:G('Bebas Ghost',{f:'Bebas Neue',w:400,u:1,z:1.3,c:'#00000000',s:'#fff',sw:.07}),
+duotone:G('Duotone',{f:'Montserrat',w:900,cyc:['#38bdf8','#f472b6'],sw:0,sh:1}),
+rainbow:G('Rainbow Words',{f:'Poppins',w:900,cyc:['#ef4444','#f59e0b','#22c55e','#3b82f6','#a855f7'],sw:.1}),
+dimfocus:G('Dim Focus',{f:'Inter',w:800,c:'#ffffff55',ac:'#ffffff',sw:0,sh:1}),
+teserif:G('Telugu Serif',{f:'Noto Serif Telugu',w:900,c:'#fff',sw:0,sh:1,ac:'#fcd34d'}),
+tebaloo:G('Telugu Baloo Pop',{f:'Baloo Tammudu 2',w:800,c:'#fff',s:'#7c3aed',sw:.16}),
+temallanna:G('Telugu Mallanna Box',{f:'Mallanna',w:400,c:'#fff',sw:0,lbg:'#000000b3',ac:'#fde047',max:4}),
+teponnala:G('Telugu Ponnala Gold',{f:'Ponnala',w:400,gv:GOLD,s:'#000',sw:.06}),
+tesuranna:G('Telugu Suranna Classic',{f:'Suranna',w:400,c:'#fff',sw:.1,ac:'#fb923c'}),
+tetimmana:G('Telugu Timmana Neon',{f:'Timmana',w:400,c:'#fff',s:'#d946ef',sw:.05,g:'#f0abfc'}),
+teravi:G('Telugu Ravi Prakash',{f:'Ravi Prakash',w:400,c:'#fff',s:'#000',sw:.12,ac:'#22d3ee'}),
+tegidugu:G('Telugu Gidugu',{f:'Gidugu',w:400,c:'#fef08a',sw:0,sh:1}),
+tesree:G('Telugu Heritage Gold',{f:'Sree Krushnadevaraya',w:400,gv:GOLD,sw:.04,sh:1}),
+telakki:G('Telugu Lakki Bar',{f:'Lakki Reddy',w:400,c:'#fff',sw:0,lbg:'#7c2d12e6',ac:'#fde68a',max:4})};
+Object.assign(TPL,M2);
+['tebold','tebox','tegold','teneon','teclassic','tepop','teserif','tebaloo','temallanna','teponnala','tesuranna','tetimmana','teravi','tegidugu','tesree','telakki'].forEach(k=>{TPL[k].tel=1});
 const rr=(ctx,x,y,w,h,r)=>{ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);ctx.fill()};
 function drawTpl(ctx,W,H,c,t,id,an,sc,pos){
 const T=TPL[id]||TPL.clean,ws=disp(c.t).split(/\s+/).filter(Boolean);if(!ws.length)return;
@@ -452,7 +516,7 @@ function tplFonts(all){const s=new Set(['Poppins','Noto Sans Telugu',$('font').v
 const loadFonts=(all)=>Promise.all(tplFonts(all).flatMap(f=>[`700 40px "${f}"`,`italic 700 40px "${f}"`].map(x=>document.fonts.load(x,'Aa తె').catch(()=>0))));
 const gal=$('gal');
 Object.keys(TPL).forEach(id=>{const d=document.createElement('div');d.className='tile';d.dataset.id=id;const cv=document.createElement('canvas');cv.width=300;cv.height=170;const lb=document.createElement('div');lb.textContent=TPL[id].n;d.append(cv,lb);d.onclick=()=>{$('tpl').value=id;selTpl()};gal.append(d)});
-function thumbs(){gal.querySelectorAll('.tile').forEach(d=>{const x=d.firstChild.getContext('2d');x.setTransform(1,0,0,1,0,0);x.fillStyle='#141414';x.fillRect(0,0,300,170);drawTpl(x,300,170,{s:0,e:3,t:'tum ek video banao'},1.6,d.dataset.id,'none',1.05,'middle')})}
+function thumbs(){gal.querySelectorAll('.tile').forEach(d=>{const x=d.firstChild.getContext('2d');x.setTransform(1,0,0,1,0,0);x.fillStyle='#141414';x.fillRect(0,0,300,170);window.__raw=TPL[d.dataset.id].tel;drawTpl(x,300,170,{s:0,e:3,t:TPL[d.dataset.id].tel?'నమస్తే మిత్రమా మీరు':'tum ek video banao'},1.6,d.dataset.id,'none',1.05,'middle');window.__raw=0})}
 function selTpl(){gal.querySelectorAll('.tile').forEach(d=>d.classList.toggle('on',d.dataset.id===$('tpl').value));try{markStale()}catch(_){}try{thumbs()}catch(_){}loadFonts(window.__gal).then(thumbs)}
 $('an').addEventListener('input',()=>markStale());
 selTpl();setTimeout(thumbs,1500);let tT;try{document.fonts.addEventListener('loadingdone',()=>{clearTimeout(tT);tT=setTimeout(thumbs,300)})}catch(_){}
@@ -479,7 +543,7 @@ try{$('cd').value=localStorage.getItem('ck_words')||''}catch(_){}
 P('ఇంటర్వ్యూ interview|ఎగ్జామ్ exam|క్లాస్ class|స్టూడెంట్ student|టీచర్ teacher|కాలేజీ college|యూనివర్సిటీ university|గవర్నమెంట్ government|పోలీస్ police|హాస్పిటల్ hospital|మెడిసిన్ medicine|హోటల్ hotel|బస్సు bus|ట్రైన్ train|ఫ్లైట్ flight|టికెట్ ticket|వైఫై wifi|నెట్వర్క్ network|ఇన్స్టాల్ install|పాస్వర్డ్ password|కార్డ్ card|క్రెడిట్ credit|స్కోర్ score|లెవెల్ level|గేమ్ game|మ్యాచ్ match|క్రికెట్ cricket|హీరో hero|డైరెక్టర్ director|ట్రైలర్ trailer|రివ్యూ review|రేటింగ్ rating|మార్కెటింగ్ marketing|ప్రొడక్ట్ product|సర్వీస్ service|కస్టమర్ customer|క్వాలిటీ quality|ప్రైస్ price|బడ్జెట్ budget|ప్రాజెక్ట్ project|మీటింగ్ meeting|ఈమెయిల్ email|పోస్ట్ post|స్టోరీ story|ఫిల్టర్ filter|మ్యూజిక్ music|సాంగ్ song|డాన్స్ dance|పార్టీ party|గిఫ్ట్ gift|బర్త్డే birthday|ఫ్యామిలీ family|ఫ్రెండ్ friend|లవ్ love|సర్ sir|మేడం madam|బ్రదర్ brother|సిస్టర్ sister',LOAN);
 const SKIPL={'తెలుగు':1};
 function telugish(s){return s.replace(/[\u0C00-\u0C7F\u200c\u200d]+/g,m=>{const w=m.replace(/[\u200c\u200d]/g,'');if(LOAN[w]&&!SKIPL[w])return LOAN[w];for(const k in LOAN){if(!SKIPL[k]&&w.length>k.length&&w.startsWith(k)){const r=w.slice(k.length);if(SUF.includes(r))return LOAN[k]+r}}return w})}
-function view(t){return $('tg').checked?tel2eng(t):$('tl').checked?telugish(t):t}
+function view(t){return window.__raw?t:$('tg').checked?tel2eng(t):$('tl').checked?telugish(t):t}
 $('tl').onchange=()=>{if($('tl').checked)$('tg').checked=false;render();markStale()};
 function vst(t,ok){const e=$('vst');e.textContent=t;e.style.color=ok?'#16a34a':''}
 v.onloadedmetadata=()=>vst('Loaded ✓ '+(curFile?curFile.name:'')+' · '+Math.round(v.duration)+' sec · '+v.videoWidth+'×'+v.videoHeight,1);
