@@ -103,6 +103,11 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <div class="row"><label>Model<select id="wm"><option value="onnx-community/whisper-base_timestamped">Base (~200 MB, fast)</option><option value="onnx-community/whisper-small_timestamped">Small (~600 MB, better)</option></select></label></div>
 <div class="row"><button class="p" id="gw" style="width:100%">✨ Generate with Whisper AI</button></div>
 <div class="note">Word-level exact timing, delay ledu. Model okasari download avutundi, tarvata cache. Audio mee device lo ne process avutundi. GitHub Pages / normal browser lo pani chestundi.</div>
+<h3>English subtitles</h3>
+<div class="row"><button class="p" id="tre" style="width:100%">🌐 Translate captions → English</button></div>
+<div class="row"><button id="gwe" style="width:100%">🎧 English from audio (Whisper)</button></div>
+<div class="row"><button id="swp" style="width:100%">⇄ Swap original ⇄ English</button></div>
+<div class="note">Translate captions: mee captions (spelling + timing) ni on-device AI tho English loki marustundi (first time ~600MB). Whisper option audio nundi direct English istundi (Whisper Small recommend). Swap tho paata captions ki tirigi vellochu.</div>
 <div class="row"><button id="fixm" style="width:100%">Recover missing speech</button></div>
 <div id="live"></div>
 <div class="note">Chrome / Edge best. Video play avuthunnappudu captions live ga create avutayi.</div></section>
@@ -247,7 +252,7 @@ snap();gotAny=false;errN=0;setTimeout(()=>{if(running&&!gotAny){if(MOBILE&&$('en
 v.onended=stop;v.onpause=()=>{if(running&&v.paused&&!v.ended)stop()};
 /* word-level sync */
 let curFile=null,W_done=[],W_cur={};const LAG=0.8;
-const NOSP=()=>/^(ja|zh)/.test($('lang').value);
+const NOSP=()=>/^(ja|zh)/.test($('lang').value)&&!window.__en;
 const tok=t=>t.trim()?(NOSP()?[...t.replace(/\s+/g,'')]:t.trim().split(/\s+/)):[];
 const jn=a=>a.join(NOSP()?'':' ');
 const allWords=()=>W_done.concat(Object.keys(W_cur).sort((a,b)=>a-b).flatMap(k=>W_cur[k]));
@@ -625,21 +630,21 @@ let asrP=null,asrM='',TJS=null;
 function buildW(ws){const wv=+$('wpc').value||7,max=NOSP()?wv*2:wv,out=[];let cur=[];const fl=()=>{if(cur.length){out.push({s:cur[0].t,t:jn(cur.map(x=>x.w)),_e:cur[cur.length-1].e});cur=[]}};
 ws.forEach(x=>{const p=cur[cur.length-1];if(p&&(x.t-p.e>.6||cur.length>=max))fl();cur.push(x)});fl();
 out.forEach((c,i)=>{const nx=out[i+1];let e=c._e+.08;if(nx&&nx.s-e<.25)e=nx.s-.02;c.e=Math.max(e,c.s+.3);delete c._e});return out}
-async function whisperGen(){const live=$('live'),btn=$('gw');if(!curFile){live.textContent='Mundu video select cheyyandi.';return}
+async function whisperGen(task){const tr=task==='translate',live=$('live'),btn=$('gw');if(!curFile){live.textContent='Mundu video select cheyyandi.';return}
 if(curFile.size>6e8){live.textContent='File chala pedda (600MB+). Chinna file try cheyyandi.';return}btn.disabled=true;let out=null,err=null;
 try{const mdl=$('wm').value;live.textContent='Audio decode avutundi…';
 const ac=new(window.AudioContext||window.webkitAudioContext)({sampleRate:16000}),buf=await ac.decodeAudioData(await curFile.arrayBuffer());ac.close();
 let a=buf.getChannelData(0);if(buf.numberOfChannels>1){const b2=buf.getChannelData(1);a=a.map((x,i)=>(x+b2[i])/2)}
-const lg=$('lang').value.slice(0,2),opt={task:'transcribe',return_timestamps:'word',chunk_length_s:29,stride_length_s:5};if(WL[lg])opt.language=WL[lg];
+const lg=$('lang').value.slice(0,2),opt={task:tr?'translate':'transcribe',return_timestamps:tr?true:'word',chunk_length_s:29,stride_length_s:5};if(WL[lg])opt.language=WL[lg];
 for(const gpu of navigator.gpu?[1,0]:[0]){try{
 if(!asrP||asrM!==mdl+gpu){live.textContent='Whisper model load avutundi… (first time download)';
 TJS=TJS||await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.6.1/dist/transformers.min.js');TJS.env.allowLocalModels=false;
 asrP=await TJS.pipeline('automatic-speech-recognition',mdl,{device:gpu?'webgpu':'wasm',dtype:gpu?{encoder_model:'fp32',decoder_model_merged:'q4'}:'q8',progress_callback:p=>{if(p.status==='progress')live.textContent='Model download: '+Math.round(p.progress||0)+'% '+(p.file||'')}});asrM=mdl+gpu}
 live.textContent='Transcribe avutundi… (video length batti time padutundi)';out=await asrP(a,opt);break}catch(e){err=e;asrP=null}}
 if(!out)throw err;
-const words=[];(out.chunks||[]).forEach(c=>{const w=(c.text||'').trim();if(!w||!c.timestamp)return;const s=c.timestamp[0],e=c.timestamp[1];words.push({w,t:s,e:e==null?s+.3:Math.max(e,s+.1),al:1})});
+const words=[];(out.chunks||[]).forEach(c=>{const tx=(c.text||'').trim();if(!tx||!c.timestamp)return;const s=c.timestamp[0],e0=c.timestamp[1],ws=tx.split(/\s+/),e=e0==null?s+.3*ws.length:Math.max(e0,s+.1),L=ws.map(w=>w.length+1),T=L.reduce((a,b)=>a+b,0);let a=0;ws.forEach((w,i)=>{words.push({w,t:s+(e-s)*a/T,e:s+(e-s)*(a+L[i])/T,al:1});a+=L[i]})});
 if(!words.length)throw new Error('Speech dorakaledu');
-snap();cues=buildW(words);selC=null;render();live.textContent='Whisper captions ready ✓ ('+cues.length+' captions)'}
+snap();if(tr&&cues.length)altCues=JSON.parse(JSON.stringify(cues));window.__en=tr?1:0;cues=buildW(words);window.__en=0;selC=null;render();live.textContent=(tr?'English subtitles ready (Whisper) ':'Whisper captions ready ')+'✓ ('+cues.length+' captions)'}
 catch(e){live.textContent='Whisper work avvaledu: '+((e&&e.message)||e)+'. Idi GitHub Pages / normal browser lo vadandi (claude.ai preview lo block avvachu).'}
 finally{btn.disabled=false}}
 $('gw').onclick=whisperGen;
@@ -697,7 +702,7 @@ function mobFallback(){wasAuto=false;stop();v.pause();$('live').textContent='Vid
 const PK='ck_project_v1';let restoredDone=false,lastSaved='';
 const SAVE_IDS=[...document.querySelectorAll('input,select,textarea')].map(e=>e.id).filter(id=>id&&!['file','gs','fi','fr','out','tlz','sh'].includes(id));
 function toast(m,ms){let t=$('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#16161d;color:#fff;padding:10px 16px;border-radius:12px;font:600 13px Inter,sans-serif;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.35);max-width:90vw;text-align:center';document.body.append(t)}t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',ms||4000)}
-function snapState(){const ctl={};SAVE_IDS.forEach(id=>{const e=$(id);if(e)ctl[id]=e.type==='checkbox'?e.checked:e.value});return JSON.stringify({v:1,ctl,cues,cuts,trimOn,file:curFile?{n:curFile.name,s:curFile.size}:null})}
+function snapState(){const ctl={};SAVE_IDS.forEach(id=>{const e=$(id);if(e)ctl[id]=e.type==='checkbox'?e.checked:e.value});return JSON.stringify({v:1,ctl,cues,alt:altCues,cuts,trimOn,file:curFile?{n:curFile.name,s:curFile.size}:null})}
 function saveNow(){if(!restoredDone)return;try{const s=snapState();if(s!==lastSaved){localStorage.setItem(PK,s);lastSaved=s;$('asv').textContent='Saved \u2713 '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}}catch(e){$('asv').textContent='Auto-save off'}}
 const idbO=()=>new Promise((res,rej)=>{const q=indexedDB.open('captionkit',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
 async function idbPut(k,val){const d=await idbO();return new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(val,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
@@ -708,7 +713,7 @@ $('file').addEventListener('change',()=>{if(curFile)saveVideo(curFile)});
 async function restore(){let st=null,blob=null;try{st=JSON.parse(localStorage.getItem(PK)||'null')}catch(_){}try{blob=await idbGet('video')}catch(_){}
 if(st&&st.v){SAVE_IDS.forEach(id=>{const e=$(id);if(!e||!(id in st.ctl))return;if(e.type==='checkbox')e.checked=st.ctl[id];else e.value=st.ctl[id]});
 try{syncVals();style();selTpl()}catch(_){}
-cues=Array.isArray(st.cues)?st.cues:[];cuts=Array.isArray(st.cuts)?st.cuts:[];trimOn=!!st.trimOn;$('tapply').textContent=trimOn?'Trim ON \u2713 (click to turn off)':'Apply trim (preview + export)';
+cues=Array.isArray(st.cues)?st.cues:[];altCues=Array.isArray(st.alt)?st.alt:[];cuts=Array.isArray(st.cuts)?st.cuts:[];trimOn=!!st.trimOn;$('tapply').textContent=trimOn?'Trim ON \u2713 (click to turn off)':'Apply trim (preview + export)';
 if(blob){curFile=blob instanceof File?blob:new File([blob],(st.file&&st.file.n)||'video',{type:blob.type});const u=URL.createObjectURL(curFile);v.dataset.u=u;v.preload='auto';v.src=u;v.load();vst('Restored \u2713 '+curFile.name,1);toast('Previous project restore ayyindi \u2713 ('+cues.length+' captions)')}
 else if(cues.length||st.file){window.__keepCues=true;vst('Video marala select cheyyandi'+(st.file?' ('+st.file.n+')':'')+' \u2014 captions restore ayyayi.');toast('Captions restore ayyayi \u2713 Video marala select cheyyandi.',6000)}
 render();renderCuts();tlRender()}
@@ -716,6 +721,23 @@ restoredDone=true;lastSaved=snapState()}
 setInterval(saveNow,1500);addEventListener('pagehide',saveNow);addEventListener('beforeunload',saveNow);addEventListener('visibilitychange',()=>{if(document.hidden)saveNow()});
 $('npj').onclick=async()=>{if(!confirm('Kotha project start cheyala? Ippati captions, video clear avutayi.'))return;restoredDone=false;try{localStorage.removeItem(PK);await idbDel('video')}catch(_){}location.reload()};
 setTimeout(restore,0);
+/* English subtitles */
+let altCues=[],nllbP=null;
+const NL={te:'tel_Telu',hi:'hin_Deva',ta:'tam_Taml',kn:'kan_Knda',ml:'mal_Mlym',mr:'mar_Deva',bn:'ben_Beng',gu:'guj_Gujr',pa:'pan_Guru',ur:'urd_Arab',es:'spa_Latn',fr:'fra_Latn',de:'deu_Latn',pt:'por_Latn',it:'ita_Latn',ru:'rus_Cyrl',ar:'arb_Arab',ja:'jpn_Jpan',ko:'kor_Hang',zh:'zho_Hans',id:'ind_Latn',tr:'tur_Latn'};
+function phrases(){const cs=[...cues].sort((a,b)=>a.s-b.s),out=[];let cur=null;cs.forEach(c=>{const n=c.t.trim().split(/\s+/).length;if(cur&&c.s-cur.e<=.5&&cur.n<14){cur.e=Math.max(cur.e,c.e);cur.t+=' '+c.t;cur.n+=n}else{cur={s:c.s,e:c.e,t:c.t,n};out.push(cur)}});return out}
+async function translateCues(){const live=$('live'),btn=$('tre');if(!cues.length){live.textContent='Mundu captions generate cheyyandi.';return}btn.disabled=true;
+try{const src=NL[$('lang').value.slice(0,2)];if(!src)throw new Error('Ee language ki translation support ledu');
+TJS=TJS||await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.6.1/dist/transformers.min.js');TJS.env.allowLocalModels=false;
+if(!nllbP){live.textContent='Translation model load avutundi… (first time ~600MB)';nllbP=await TJS.pipeline('translation','Xenova/nllb-200-distilled-600M',{dtype:'q8',device:'wasm',progress_callback:p=>{if(p.status==='progress')live.textContent='Model download: '+Math.round(p.progress||0)+'% '+(p.file||'')}})}
+const ph=phrases(),words=[];
+for(let i=0;i<ph.length;i++){live.textContent='Translate avutundi… '+(i+1)+'/'+ph.length;const r=await nllbP(ph[i].t,{src_lang:src,tgt_lang:'eng_Latn',max_new_tokens:160}),en=((r&&r[0]&&r[0].translation_text)||'').trim();if(!en)continue;
+const ws=en.split(/\s+/),L=ws.map(w=>w.length+1),T=L.reduce((a,b)=>a+b,0),D=Math.max(.3,ph[i].e-ph[i].s);let a=0;ws.forEach((w,k)=>{words.push({w,t:ph[i].s+D*a/T,e:ph[i].s+D*(a+L[k])/T,al:1});a+=L[k]})}
+if(!words.length)throw new Error('Translation empty');
+snap();altCues=JSON.parse(JSON.stringify(cues));window.__en=1;cues=buildW(words);window.__en=0;selC=null;render();live.textContent='English subtitles ready ✓ ('+cues.length+' captions). Original ki ⇄ Swap.'}
+catch(e){live.textContent='Translate work avvaledu: '+((e&&e.message)||e)+'. Idi GitHub Pages / normal browser lo vadandi (claude.ai preview lo block avvachu).'}
+finally{btn.disabled=false}}
+$('tre').onclick=translateCues;$('gwe').onclick=()=>whisperGen('translate');
+$('swp').onclick=()=>{if(!altCues.length){$('live').textContent='Swap kosam mundu English translate cheyyandi.';return}snap();const t=cues;cues=altCues;altCues=t;selC=null;render();$('live').textContent='Swap ayyindi ✓'};
 /* burned-in video export */
 
 let ac=null,gDest=null,gSrc=null,blobOut=null,blobName='';
