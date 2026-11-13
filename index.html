@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CaptionKit – Auto Captions & Tenglish</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiro+Telugu:ital@0;1&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Montserrat:wght@300&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Lobster&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@700;900&family=Arimo:wght@700&family=Libre+Franklin:wght@800&family=Roboto:wght@700;900&family=Roboto+Condensed:wght@700&family=Open+Sans:wght@800&family=Lato:wght@900&family=Jost:wght@700&family=Josefin+Sans:wght@700&family=Barlow:wght@800&family=Barlow+Semi+Condensed:wght@800&family=Oswald:wght@700&family=Archivo+Narrow:wght@700&family=Work+Sans:wght@800&family=Nunito+Sans:wght@800&family=IBM+Plex+Sans:wght@700&family=Red+Hat+Display:wght@900&display=swap">
@@ -132,7 +133,7 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <div class="row" style="margin-top:8px"><button id="dist">Auto-time lines</button></div></section>
 <section class="tab" id="t_tpl" hidden><h3>Templates</h3>
 <div class="row" id="gcat"><button class="p" data-f="all">All</button><button data-f="pro">⭐ Premiere Style</button><button data-f="fx">🎨 3D &amp; FX</button><button data-f="glow">Glow / Gold</button><button data-f="bar">Bars / Tags</button><button data-f="tel">Telugu</button></div>
-<input id="gs" placeholder="Search 250+ templates (gold, futura, trajan, karaoke...)" style="width:100%;margin-bottom:10px"><input type="hidden" id="tpl" value="clean"><div class="gal" id="gal"></div></section>
+<input id="gs" placeholder="Search 500+ templates (gold, neon, telugu, karaoke...)" style="width:100%;margin-bottom:10px"><input type="hidden" id="tpl" value="clean"><div class="gal" id="gal"></div></section>
 <section class="tab" id="t_trim" hidden><h3>Auto Trim</h3>
 <div class="note">Silence, filler words, repeated words / takes ni auto find chesi skip chestundi. Original video marchadu: preview + export lo cuts skip avutayi. Captions generate chesaka fillers/repeats dorukutayi.</div>
 <div class="row"><label>Min silence<select id="tms"><option value="0.4">0.4 sec</option><option value="0.6" selected>0.6 sec</option><option value="0.9">0.9 sec</option><option value="1.5">1.5 sec</option></select></label></div>
@@ -738,6 +739,32 @@ pm_hero:F('Hero Text',{f:'Montserrat',w:900,gh:['#ff4ad8','#7a4aff'],g:'#7a4aff'
 pm_shadow:F('Shadow Glow',{f:'Inter',w:800,c:'#ffe65a',g:'#ffd400',lay:[[.03,.06,'#00000099',0]]})};
 X4.pm_cross.an='cross';X4.pm_sslide.an='slide';X4.pm_bounce.an='bounce';X4.pr_topimp.an='smooth';X4.pr_titlehl.an='smooth';
 Object.assign(TPL,X4);
+W400.push('Tiro Telugu');
+const TF=[['Anek Telugu',800,'Anek'],['Noto Sans Telugu',800,'Noto Sans'],['Hind Guntur',700,'Guntur'],['Mandali',400,'Mandali'],['Ramabhadra',400,'Ramabhadra'],['Gurajada',400,'Gurajada'],['Ramaraja',400,'Ramaraja'],['Suravaram',400,'Suravaram'],['Peddana',400,'Peddana'],['NTR',400,'NTR'],['Dhurjati',400,'Dhurjati'],['Tenali Ramakrishna',400,'Tenali'],['Noto Serif Telugu',900,'Noto Serif'],['Baloo Tammudu 2',800,'Baloo'],['Mallanna',400,'Mallanna'],['Ponnala',400,'Ponnala'],['Suranna',400,'Suranna'],['Timmana',400,'Timmana'],['Ravi Prakash',400,'Ravi Prakash'],['Gidugu',400,'Gidugu'],['Sree Krushnadevaraya',400,'Krishnadevaraya'],['Lakki Reddy',400,'Lakki Reddy'],['Tiro Telugu',400,'Tiro']];
+const TT=[
+['Sankranti Gold',{gv:['#fff3c0','#e0a02a','#9a6210'],s:'#4a2c04',sw:.06,g:'#ffb40055',bev:1}],
+['Movie Title Chrome',{gb:['#ffffff','#cfcfcf','#6a6a6a','#bdbdbd',.5],s:'#1a1a1a',sw:.06,ex:[5,.03,.06,'#2a2a2a','#555555'],bev:1}],
+['News Flash Red',{c:'#fff',lbg:'#c1121f'}],
+['Breaking Yellow',{c:'#111',lbg:'#ffd60a'}],
+['Ugadi Green Gold',{gv:['#ffe97a','#2fbf71'],s:'#0a3a1a',sw:.06}],
+['Diwali Glow',{c:'#fff3c0',s:'#ff8a1a',sw:.05,ng:'#ff6a00'}],
+['Devotional Saffron',{gv:['#ffd27a','#ff7a00'],s:'#6a2a00',sw:.07,g:'#ff7a0066'}],
+['Neon Cyan',{c:'#00000000',s:'#5ff0ff',sw:.04,ng:'#19d3e8'}],
+['Neon Pink',{c:'#00000000',s:'#ff8ae8',sw:.04,ng:'#ff2ad8'}],
+['Hero Red 3D',{gv:['#ff5a4a','#c0121c'],s:'#2a0508',sw:.06,ex:[6,.03,.07,'#2a0508','#6a0a10'],gloss:1}],
+['Comedy Yellow',{c:'#ffe600',s:'#000',sw:.16,lay:[[.03,.06,'#000000',.16]]}],
+['Romantic Rose',{gv:['#ffe0ea','#ff6b9d'],s:'#fff',sw:.05,g:'#ff6b9d66'}],
+['Royal Purple Gold',{gv:['#fff1b0','#d79a22'],s:'#3a0a60',sw:.08,s2:'#1a0430',sw2:.14}],
+['Wedding Pearl',{gv:['#ffffff','#e8dcc8'],s:'#b8924a',sw:.05,g:'#ffffff66'}],
+['Horror Blood',{c:'#ff1a1a',s:'#000',sw:.1,g:'#ff0000',lay:[[0,.06,'#5a0000',.1]]}],
+['Sports Blue 3D',{gv:['#9ac8ff','#1d4ed8'],s:'#fff',sw:.06,ex:[5,.03,.06,'#0a2a70','#1d4ed8']}],
+['Tech Terminal',{c:'#3dff6a',lbg:'#0a0a0a',g:'#1fdc4a'}],
+['Kids Candy',{cyc:['#ff6ec7','#7afcff','#fff740'],s:'#fff',sw:.1,lay:[[.03,.06,'#00000066',.1]]}],
+['Paper Bar',{c:'#111',lbg:'#fffffff0',ac:'#e11d48'}],
+['Glass Frost',{c:'#fff',lbg:'#ffffff2e',ac:'#fde047'}]];
+const X5={};TT.forEach((t,ti)=>{for(let k=0;k<5;k++){const f=TF[(ti*5+k)%TF.length],T=F('Telugu · '+t[0]+' · '+f[2],Object.assign({f:f[0],w:f[1]},t[1]));T.tel=1;T.cat='tel';X5['te'+ti+'_'+k]=T}});
+Object.assign(TPL,X5);
+TF.forEach(f=>{if(![...$('font').options].some(o=>o.value===f[0])){const o=new Option(f[0],f[0]);o.style.fontFamily=f[0];$('font').add(o)}});
 ['Lilita One','Lobster','Pacifico'].forEach(f=>{if(![...$('font').options].some(o=>o.value===f)){const o=new Option(f,f);o.style.fontFamily=f;$('font').add(o)}});
 [...new Set(PF.map(f=>f[0]).concat(['Gloock','VT323','Special Elite','Bodoni Moda']))].forEach(f=>{if(![...$('font').options].some(o=>o.value===f)){const o=new Option(f,f);o.style.fontFamily=f;$('font').add(o)}});
 ['tebold','tebox','tegold','teneon','teclassic','tepop','teserif','tebaloo','temallanna','teponnala','tesuranna','tetimmana','teravi','tegidugu','tesree','telakki'].forEach(k=>{TPL[k].tel=1});
@@ -782,7 +809,7 @@ octx.setTransform(1,0,0,1,(w-cw)/2*d,(h-ch)/2*d);paint(octx,cw*d,ch*d,v.currentT
 function tplFonts(all){const s=new Set(['Poppins','Noto Sans Telugu',$('font').value]);(all?Object.values(TPL):[TPL[$('tpl').value]||TPL.clean]).forEach(T=>[0,1,2,3].forEach(j=>[0,1].forEach(a=>{try{s.add(T.st(j,4,a,1).f)}catch(_){}})));s.delete(undefined);return[...s]}
 const loadFonts=(all)=>Promise.all(tplFonts(all).flatMap(f=>[`700 40px "${f}"`,`italic 700 40px "${f}"`].map(x=>document.fonts.load(x,'Aa తె').catch(()=>0))));
 const gal=$('gal');
-Object.keys(TPL).forEach(id=>{const d=document.createElement('div');d.className='tile';d.dataset.id=id;const cv=document.createElement('canvas');cv.width=300;cv.height=170;const lb=document.createElement('div');lb.textContent=TPL[id].n;d.append(cv,lb);d.onclick=()=>{$('tpl').value=id;if(TPL[id].an)$('an').value=TPL[id].an;selTpl()};gal.append(d)});
+Object.keys(TPL).forEach(id=>{const d=document.createElement('div');d.className='tile';d.dataset.id=id;const cv=document.createElement('canvas');cv.width=300;cv.height=170;const lb=document.createElement('div');lb.textContent=TPL[id].n;d.append(cv,lb);d.onclick=()=>{$('tpl').value=id;if(TPL[id].an)$('an').value=TPL[id].an;selTpl();if(TPL[id].tel&&$('tg').checked&&typeof toast==='function')toast('Telugu template: Telugu script lo best ga untundi. Language row lo Tenglish off cheyyandi.',5000)};gal.append(d)});
 function thumbs(){gal.querySelectorAll('.tile').forEach(d=>{const x=d.firstChild.getContext('2d');x.setTransform(1,0,0,1,0,0);x.fillStyle='#141414';x.fillRect(0,0,300,170);window.__raw=TPL[d.dataset.id].tel;drawTpl(x,300,170,{s:0,e:3,t:TPL[d.dataset.id].tel?'నమస్తే మిత్రమా మీరు':'tum ek video banao'},1.6,d.dataset.id,'none',TPL[d.dataset.id].cat==='3d'?1.5:1.05,'middle');window.__raw=0})}
 function selTpl(){gal.querySelectorAll('.tile').forEach(d=>d.classList.toggle('on',d.dataset.id===$('tpl').value));try{markStale()}catch(_){}try{thumbs()}catch(_){}loadFonts(window.__gal).then(thumbs)}
 $('an').addEventListener('input',()=>markStale());
