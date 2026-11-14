@@ -152,6 +152,9 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <main class="main"><div class="stage" id="stg"><video id="v" playsinline></video><canvas id="ovc"></canvas><div id="hook"></div><div id="ov"><span></span></div></div></main>
 <aside class="panel pr">
 <h3>Caption style</h3>
+<div class="row"><label style="flex:1 1 100%">Template font <span id="tfn" style="color:var(--ac);text-transform:none"></span><select id="tfo"><option value="">Template default</option></select></label></div>
+<div class="row"><button id="tfp" title="Previous font">&#9664;</button><button id="tfx" title="Next font">&#9654;</button><button id="tfr" style="flex:1">Reset font</button></div>
+<div class="note">Template select chesaka, ade style lo vere font try cheyyandi. &#9664; &#9654; tho fonts okokkati chudochu. Gallery thumbnails kuda aa font tho kanipistayi.</div>
 <div class="row"><label>Preset<select id="pre"><option value="">Choose&hellip;</option><option value="hormozi">Viral highlight</option><option value="mrbeast">Big yellow</option><option value="boxed">Boxed pro</option><option value="classic">Classic</option><option value="telugu">Telugu script</option></select></label><label>Font (Custom template)<select id="font"></select></label></div>
 <div class="row"><label>Text<input type="color" id="fg" value="#ffffff"></label><label>Box<input type="color" id="bgc" value="#000000"></label><label>Highlight<input type="color" id="hl" value="#ffe500"></label></div>
 <div class="row"><label class="chk"><input type="checkbox" id="up"> UPPERCASE</label><label class="chk"><input type="checkbox" id="hlon"> Highlight spoken word</label></div>
@@ -777,6 +780,7 @@ const mx=+$('wpc').value||T.max,g=Math.floor(ai/mx),a0=g*mx,gw=ws.slice(a0,a0+mx
 let em=0;gw.forEach((w,i)=>{if(w.length>=gw[em].length)em=i});
 const base=$('size').value*sc*1.15;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
 const toks=gw.map((w,j)=>{const o=Object.assign({},DEF,T.st(j,n,j===la,em,la));if($('hlon').checked&&j===la&&!T.nohl&&id!=='hormozi'&&id!=='mrbeast')o.c=$('hl').value;const so=c.ws&&c.ws[a0+j];if(so){if(so.c){o.c=so.c;o.gp=o.gv=o.gb=o.gh=o.pat=null}if(so.z&&so.z!==1)o.z*=so.z;if(so.g)o.g=so.g;if(so.u)o.u=1}
+const fo=$('tfo').value;if(fo&&id!=='custom'){o.f=fo;o.w=W400.includes(fo)?400:Math.max(o.w,700)}
 const fs=base*o.z,txt=o.u?w.toUpperCase():w,font=`${o.i?'italic ':''}${o.w} ${fs}px "${o.f}","Noto Sans Telugu",system-ui,sans-serif`;ctx.font=font;
 ctx.letterSpacing=(o.ls||0)*fs+'px';const mw=ctx.measureText(txt).width;ctx.letterSpacing='0px';return{o,j,fs,txt,font,w:mw+(o.b?fs*.5:0)}});
 const maxW=W*.88,lines=[];let cur=[],cw=0;
@@ -806,7 +810,7 @@ function live(){const w=ovc.clientWidth,h=ovc.clientHeight,d=window.devicePixelR
 octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,pw,ph);
 const ar=(v.videoWidth/v.videoHeight)||(16/9);let cw=w,ch=w/ar;if(ch>h){ch=h;cw=h*ar}refW=cw;window.__still=v.paused;
 octx.setTransform(1,0,0,1,(w-cw)/2*d,(h-ch)/2*d);paint(octx,cw*d,ch*d,v.currentTime)}
-function tplFonts(all){const s=new Set(['Poppins','Noto Sans Telugu',$('font').value]);(all?Object.values(TPL):[TPL[$('tpl').value]||TPL.clean]).forEach(T=>[0,1,2,3].forEach(j=>[0,1].forEach(a=>{try{s.add(T.st(j,4,a,1).f)}catch(_){}})));s.delete(undefined);return[...s]}
+function tplFonts(all){const s=new Set(['Poppins','Noto Sans Telugu',$('font').value,$('tfo').value]);(all?Object.values(TPL):[TPL[$('tpl').value]||TPL.clean]).forEach(T=>[0,1,2,3].forEach(j=>[0,1].forEach(a=>{try{s.add(T.st(j,4,a,1).f)}catch(_){}})));s.delete(undefined);s.delete('');return[...s]}
 const loadFonts=(all)=>Promise.all(tplFonts(all).flatMap(f=>[`700 40px "${f}"`,`italic 700 40px "${f}"`].map(x=>document.fonts.load(x,'Aa తె').catch(()=>0))));
 const gal=$('gal');
 Object.keys(TPL).forEach(id=>{const d=document.createElement('div');d.className='tile';d.dataset.id=id;const cv=document.createElement('canvas');cv.width=300;cv.height=170;const lb=document.createElement('div');lb.textContent=TPL[id].n;d.append(cv,lb);d.onclick=()=>{$('tpl').value=id;if(TPL[id].an)$('an').value=TPL[id].an;selTpl();if(TPL[id].tel&&$('tg').checked&&typeof toast==='function')toast('Telugu template: Telugu script lo best ga untundi. Language row lo Tenglish off cheyyandi.',5000)};gal.append(d)});
@@ -1003,7 +1007,7 @@ async function saveVideo(f){try{if(f.size>2e9){toast('Video 2GB kante pedda: cap
 $('file').addEventListener('change',()=>{if(curFile)saveVideo(curFile)});
 async function restore(){let st=null,blob=null;try{st=JSON.parse(localStorage.getItem(PK)||'null')}catch(_){}try{blob=await idbGet('video')}catch(_){}
 if(st&&st.v){SAVE_IDS.forEach(id=>{const e=$(id);if(!e||!(id in st.ctl))return;if(e.type==='checkbox')e.checked=st.ctl[id];else e.value=st.ctl[id]});
-try{syncVals();style();selTpl()}catch(_){}
+try{syncVals();style();selTpl()}catch(_){}try{tfApply()}catch(_){}
 cues=Array.isArray(st.cues)?st.cues:[];altCues=Array.isArray(st.alt)?st.alt:[];cuts=Array.isArray(st.cuts)?st.cuts:[];trimOn=!!st.trimOn;$('tapply').textContent=trimOn?'Trim ON \u2713 (click to turn off)':'Apply trim (preview + export)';
 if(blob){curFile=blob instanceof File?blob:new File([blob],(st.file&&st.file.n)||'video',{type:blob.type});const u=URL.createObjectURL(curFile);v.dataset.u=u;v.preload='auto';v.src=u;v.load();vst('Restored \u2713 '+curFile.name,1);toast('Previous project restore ayyindi \u2713 ('+cues.length+' captions)')}
 else if(cues.length||st.file){window.__keepCues=true;vst('Video marala select cheyyandi'+(st.file?' ('+st.file.n+')':'')+' \u2014 captions restore ayyayi.');toast('Captions restore ayyayi \u2713 Video marala select cheyyandi.',6000)}
@@ -1037,6 +1041,13 @@ let gsT;const gThumbs=()=>{clearTimeout(gsT);gsT=setTimeout(thumbs,60)};
 gal.addEventListener('scroll',gThumbs);$('gs').addEventListener('input',gThumbs);document.querySelectorAll('#gcat button').forEach(b=>b.addEventListener('click',gThumbs));
 document.querySelector('.rail button[data-t=tpl]').addEventListener('click',()=>setTimeout(thumbs,30));
 try{document.fonts.addEventListener('loadingdone',()=>{tgen++;gThumbs()})}catch(_){}
+/* template font override (keep style, change font) */
+const TELF=new Set([...TF.map(f=>f[0]),'Noto Sans Telugu','Anek Telugu','Hind Guntur','Mandali','Ramabhadra','Gurajada','Ramaraja','Suravaram','Peddana','NTR','Dhurjati','Tenali Ramakrishna','Noto Serif Telugu','Baloo Tammudu 2','Mallanna','Ponnala','Suranna','Timmana','Ravi Prakash','Gidugu','Sree Krushnadevaraya','Lakki Reddy','Tiro Telugu']);
+{const all=[...$('font').options].map(o=>o.value).filter(f=>f&&f!=='system-ui'),tfo=$('tfo'),mk=(lab,list)=>{const g=document.createElement('optgroup');g.label=lab;[...new Set(list)].sort().forEach(f=>{const o=new Option(f,f);o.style.fontFamily=f;g.append(o)});tfo.append(g)};mk('Telugu fonts',all.filter(f=>TELF.has(f)));mk('All other fonts',all.filter(f=>!TELF.has(f)))}
+function tfApply(){const f=$('tfo').value;$('tfn').textContent=f?'\u2022 '+f:'';if(f)loadFonts().then(()=>{tgen++;thumbs()});tgen++;thumbs();markStale()}
+$('tfo').onchange=tfApply;$('tfr').onclick=()=>{$('tfo').value='';tfApply()};
+const tfStep=d=>{const o=[...$('tfo').options].filter(x=>x.value),i=o.findIndex(x=>x.value===$('tfo').value),n=o[(i+d+o.length)%o.length];$('tfo').value=n.value;tfApply()};
+$('tfp').onclick=()=>tfStep(-1);$('tfx').onclick=()=>tfStep(1);
 /* burned-in video export */
 
 let ac=null,gDest=null,gSrc=null,blobOut=null,blobName='';
