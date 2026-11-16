@@ -119,7 +119,7 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 <section class="tab" id="t_cc" hidden><h3>Captions</h3>
 <div id="cues"></div>
 <div class="row" style="margin-top:8px"><button id="add">+ Add line</button><button id="clr">Clear all</button></div>
-<div class="note">&#9654; play &middot; S / E = start / end ni ippati time ki set &middot; &times; delete. Tenglish word marchi click-out cheste nerchukuntundi.</div>
+<div class="note">&#9654; play &middot; S / E = start / end ni ippati time ki set &middot; &times; delete. Tenglish word marchi click-out cheste nerchukuntundi. <b>Video meeda caption ni double-click chesi akkade edit cheyochu</b> (Enter = save, Tab = next caption, Esc = cancel).</div>
 <h3>Word styling</h3><div class="note">Caption select chesi (timeline lo click), words select chesi style cheyyandi.</div>
 <div class="row" id="wchips"></div>
 <div class="row"><label>Color<input type="color" id="wc" value="#ffd60a"></label><label>Size<select id="wz"><option value="1">Normal</option><option value="1.3" selected>Bigger</option><option value="1.6">Huge</option><option value="0.8">Smaller</option></select></label><label class="chk"><input type="checkbox" id="wg"> Glow</label><label class="chk"><input type="checkbox" id="wu"> UPPER</label></div>
@@ -788,7 +788,7 @@ toks.forEach(k=>{const sp=k.fs*.28;if(cur.length&&(T.stack||cw+sp+k.w>maxW)){lin
 lines.forEach(l=>{l.h=Math.max(...l.map(k=>k.fs))*(T.stack?1.02:1.18);l.w=l.reduce((s,k,i)=>s+k.w+(i?k.fs*.28:0),0)});
 const tot=lines.reduce((s,l)=>s+l.h,0);let y=pos==='middle'?(H-tot)/2:H*(+$('cy').value)/100-tot/2;const ox=pos==='middle'?0:W*(+$('cx').value)/100;
 const hx=$('bgc').value,rgb=[1,3,5].map(i=>parseInt(hx.substr(i,2),16)).join(',');
-const bw=Math.max(...lines.map(l=>l.w)),fit=$('afit').checked?Math.min(1,W*.94/Math.max(bw,1),H*.9/Math.max(tot,1)):1;ctx.save();if(fit<1){const fx=W/2+ox,fy=y+tot/2;ctx.translate(fx,fy);ctx.scale(fit,fit);ctx.translate(-fx,-fy)}
+const bw=Math.max(...lines.map(l=>l.w)),fit=$('afit').checked?Math.min(1,W*.94/Math.max(bw,1),H*.9/Math.max(tot,1)):1;if(pos==='live'){const fx0=W/2+ox,fy0=y+tot/2;window.__cb={cue:c,x:fx0-bw*fit/2,y:fy0-tot*fit/2,w:bw*fit,h:tot*fit}}ctx.save();if(fit<1){const fx=W/2+ox,fy=y+tot/2;ctx.translate(fx,fy);ctx.scale(fit,fit);ctx.translate(-fx,-fy)}
 for(const l of lines){const al=l[0].o.al;let x=(al==='l'?(W-bw)/2:al==='r'?(W+bw)/2-l.w:(W-l.w)/2)+ox;
 if(T.lbg){const pd=base*.6;ctx.fillStyle=T.lbg;rr(ctx,x-pd,y+l.h*.02,l.w+2*pd,l.h*.96,l.h*.48)}
 if(T.box){const pd=base*.4;ctx.fillStyle=`rgba(${rgb},${$('bga').value/100})`;rr(ctx,x-pd,y+l.h*.04,l.w+2*pd,l.h*.92,base*.25)}
@@ -804,11 +804,11 @@ ctx.fillText(k.txt,0,0);if(o.g)ctx.fillText(k.txt,0,0);
 if(o.ul){ctx.shadowBlur=0;ctx.fillStyle=o.ul;ctx.fillRect(-k.w/2,k.fs*.4,k.w,k.fs*.07)}
 }ctx.restore();x+=k.w+k.fs*.28}
 y+=l.h}ctx.restore()}
-function paint(ctx,W,H,t){window.__t=t;const c=cues.find(c=>t>=c.s&&t<=c.e);if(c)drawTpl(ctx,W,H,c,t,$('tpl').value,(window.__still?'none':$('an').value),W/refW,'live');const ht=hookTxt(t);if(ht)drawHook(ctx,W,H,ht)}
+function paint(ctx,W,H,t){window.__t=t;window.__cb=null;const c=cues.find(c=>t>=c.s&&t<=c.e);if(c&&c!==window.__editing)drawTpl(ctx,W,H,c,t,$('tpl').value,(window.__still?'none':$('an').value),W/refW,'live');const ht=hookTxt(t);if(ht)drawHook(ctx,W,H,ht)}
 const ovc=$('ovc'),octx=ovc.getContext('2d');
 function live(){const w=ovc.clientWidth,h=ovc.clientHeight,d=window.devicePixelRatio||1;if(!w||!h)return;const pw=Math.round(w*d),ph=Math.round(h*d);if(ovc.width!==pw||ovc.height!==ph){ovc.width=pw;ovc.height=ph}
 octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,pw,ph);
-const ar=(v.videoWidth/v.videoHeight)||(16/9);let cw=w,ch=w/ar;if(ch>h){ch=h;cw=h*ar}refW=cw;window.__still=v.paused;
+const ar=(v.videoWidth/v.videoHeight)||(16/9);let cw=w,ch=w/ar;if(ch>h){ch=h;cw=h*ar}refW=cw;window.__still=v.paused;window.__lv={ox:(w-cw)/2,oy:(h-ch)/2,d};
 octx.setTransform(1,0,0,1,(w-cw)/2*d,(h-ch)/2*d);paint(octx,cw*d,ch*d,v.currentTime)}
 function tplFonts(all){const s=new Set(['Poppins','Noto Sans Telugu',$('font').value,$('tfo').value]);(all?Object.values(TPL):[TPL[$('tpl').value]||TPL.clean]).forEach(T=>[0,1,2,3].forEach(j=>[0,1].forEach(a=>{try{s.add(T.st(j,4,a,1).f)}catch(_){}})));s.delete(undefined);s.delete('');return[...s]}
 const loadFonts=(all)=>Promise.all(tplFonts(all).flatMap(f=>[`700 40px "${f}"`,`italic 700 40px "${f}"`].map(x=>document.fonts.load(x,'Aa తె').catch(()=>0))));
@@ -1048,6 +1048,20 @@ function tfApply(){const f=$('tfo').value;$('tfn').textContent=f?'\u2022 '+f:'';
 $('tfo').onchange=tfApply;$('tfr').onclick=()=>{$('tfo').value='';tfApply()};
 const tfStep=d=>{const o=[...$('tfo').options].filter(x=>x.value),i=o.findIndex(x=>x.value===$('tfo').value),n=o[(i+d+o.length)%o.length];$('tfo').value=n.value;tfApply()};
 $('tfp').onclick=()=>tfStep(-1);$('tfx').onclick=()=>tfStep(1);
+/* double-click caption editing on the video */
+let ced=null,cedCue=null;
+function cedClose(save){if(!ced)return;const el=ced,c=cedCue,val=el.value.trim();ced=null;cedCue=null;window.__editing=null;el.remove();if(save&&c&&val&&val!==view(c.t)){const orig=c.t;snap();c.t=val;learn(orig,val);render()}}
+function cedOpen(c){cedClose(true);if(!c)return;v.pause();selC=c;try{rowSel();tlRender();renderWords()}catch(_){}
+const cb=window.__cb,lv=window.__lv,st=$('stg').getBoundingClientRect();let L,T,Wd,H2;
+if(cb&&cb.cue===c&&lv){L=lv.ox+cb.x/lv.d;T=lv.oy+cb.y/lv.d;Wd=cb.w/lv.d;H2=cb.h/lv.d}else{Wd=st.width*.7;H2=st.height*.1;L=st.width/2-Wd/2+st.width*(+$('cx').value)/100;T=st.height*(+$('cy').value)/100-H2/2}
+const w=Math.min(st.width-8,Math.max(200,Wd+30)),el=document.createElement('input');el.value=view(c.t);el.className='ced';
+el.style.cssText='position:absolute;z-index:6;background:var(--panel);color:var(--tx);border:2px solid var(--ac);border-radius:10px;text-align:center;font:600 18px Inter,sans-serif;padding:0 10px;box-shadow:0 8px 24px rgba(0,0,0,.4);left:'+Math.max(4,Math.min(st.width-w-4,L+Wd/2-w/2))+'px;top:'+Math.max(4,Math.min(st.height-48,T+H2/2-22))+'px;width:'+w+'px;height:44px';
+$('stg').append(el);ced=el;cedCue=c;window.__editing=c;el.focus();el.select();
+el.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();cedClose(true)}else if(e.key==='Escape'){e.preventDefault();cedClose(false)}else if(e.key==='Tab'){e.preventDefault();const cs=[...cues].sort((a,b)=>a.s-b.s),i=cs.indexOf(c),n=cs[i+(e.shiftKey?-1:1)];cedClose(true);if(n){v.currentTime=n.s+.02;setTimeout(()=>cedOpen(n),160)}}};
+el.onblur=()=>setTimeout(()=>{if(ced===el)cedClose(true)},120);el.addEventListener('pointerdown',e=>e.stopPropagation())}
+function capHit(e){const cb=window.__cb,lv=window.__lv;if(!cb||!cb.cue||!lv)return false;const r=ovc.getBoundingClientRect(),px=(e.clientX-r.left-lv.ox)*lv.d,py=(e.clientY-r.top-lv.oy)*lv.d,pad=80*lv.d;return px>=cb.x-pad&&px<=cb.x+cb.w+pad&&py>=cb.y-pad&&py<=cb.y+cb.h+pad}
+$('stg').addEventListener('dblclick',e=>{if(e.target.classList&&e.target.classList.contains('ced'))return;if(capHit(e)){e.preventDefault();cedOpen(window.__cb.cue)}});
+$('stg').addEventListener('mousemove',e=>{if(e.target.classList&&e.target.classList.contains('ced'))return;const h=capHit(e);$('stg').style.cursor=h?'text':'';$('stg').title=h?'Double-click to edit caption':''});
 /* burned-in video export */
 
 let ac=null,gDest=null,gSrc=null,blobOut=null,blobName='';
