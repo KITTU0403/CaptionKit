@@ -81,7 +81,7 @@ textarea{width:100%;min-height:80px;font:12px ui-monospace,Menlo,monospace}
 .cutb{position:absolute;top:0;height:50px;border-radius:6px;border:1px solid #e5484d;background:repeating-linear-gradient(45deg,#e5484d66,#e5484d66 6px,#e5484d22 6px,#e5484d22 12px);pointer-events:none}
 .trow{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px}.trow span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trow button{padding:3px 8px}
 #wchips{gap:5px}#wchips button{padding:4px 9px}
-@media(max-width:980px){body{overflow-x:hidden;overflow-y:auto}.tbar{height:auto;flex-wrap:wrap;padding:8px 10px;justify-content:center}.tbar .sp{display:none}.tbar input[type=range]{width:80px}.tbody{height:190px;flex:none}.app{height:auto}.mid{flex-direction:column}.rail{width:auto;flex-direction:row;overflow:auto}.panel,.pl,.pr{width:auto;border:0;overflow:visible}.main{height:70vh}.gal{max-height:420px}.tl{height:auto}}
+@media(max-width:980px){body{overflow-x:hidden;overflow-y:auto}.top{height:auto;flex-wrap:wrap;padding:8px 10px;gap:8px}.chip{padding:5px 8px;font-size:11px}.top small{max-width:120px}.tbar{height:auto;flex-wrap:wrap;padding:8px 10px;justify-content:center}.tbar .sp{display:none}.tbar input[type=range]{width:80px}.tbody{height:190px;flex:none}.app{height:auto}.mid{flex-direction:column}.rail{width:auto;flex-direction:row;overflow:auto}.panel,.pl,.pr{width:auto;border:0;overflow:visible}.main{height:70vh}.gal{max-height:420px}.tl{height:auto}.top{gap:6px;padding:0 8px}.top small,#ar{display:none}#asv{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px}.chip,.top .p{padding:5px 8px}}
 </style>
 </head>
 <body>
@@ -253,8 +253,8 @@ let tr=null;try{if(gDest)tr=gDest.stream.getAudioTracks()[0];else{const s=v.capt
 if(MOBILE&&$('eng').value!=='browser'&&!tr){mobFallback();return}
 try{tr?rec.start(tr):rec.start()}catch(_){if(MOBILE&&$('eng').value!=='browser'){mobFallback();return}try{rec.start()}catch(__){}}}
 function stop(){running=false;try{rec&&rec.stop()}catch(_){}$('go').textContent='▶ Auto-generate captions';$('go').classList.remove('on');$('live').textContent=''}
-$('go').onclick=()=>{if(running){wasAuto=false;stop();v.pause();return}
-const eng=$('eng').value;if(eng==='whisper'||(eng==='auto'&&MOBILE&&!TRK)){$('live').textContent='Ee phone browser video audio ni direct ga ivvadu (mic vaddu). Whisper AI tho video audio nundi generate chestunna (first time ~200MB)…';whisperGen();return}
+$('go').onclick=()=>{if(running){wasAuto=false;stop();v.pause();return}if(IN_SB&&(!SR||(MOBILE&&$('eng').value!=='browser'))){sbWarn();return}
+const eng=$('eng').value;if(eng==='whisper'||(eng==='auto'&&MOBILE&&(!TRK||!SR))){$('live').textContent='Ee phone browser video audio ni direct ga ivvadu (mic vaddu). Whisper AI tho video audio nundi generate chestunna (first time ~200MB)…';whisperGen();return}
 if(!SR){alert('Ee browser lo speech recognition ledu. Chrome leda Edge use cheyyandi.');return}
 if(!v.src){alert('Mundu video select cheyyandi.');return}try{graph();ac.resume()}catch(_){}
 snap();gotAny=false;errN=0;setTimeout(()=>{if(running&&!gotAny){if(MOBILE&&$('eng').value!=='browser')mobFallback();else $('live').textContent='⚠ 10 sec ayyina captions raaledu: browser video audio ni vinatledu. Engine = Whisper AI select chesi try cheyyandi.'}},MOBILE?9000:10000);W_done=[];W_cur={};cues=[];render();lastAl=0;wasAuto=true;running=true;$('go').textContent='■ Stop';$('go').classList.add('on');v.currentTime=0;v.play().then(begin).catch(begin)};
@@ -940,7 +940,7 @@ if(!out)throw err;
 const words=[];(out.chunks||[]).forEach(c=>{const tx=(c.text||'').trim();if(!tx||!c.timestamp)return;const s=c.timestamp[0],e0=c.timestamp[1],ws=tx.split(/\s+/),e=e0==null?s+.3*ws.length:Math.max(e0,s+.1),L=ws.map(w=>w.length+1),T=L.reduce((a,b)=>a+b,0);let a=0;ws.forEach((w,i)=>{words.push({w,t:s+(e-s)*a/T,e:s+(e-s)*(a+L[i])/T,al:1});a+=L[i]})});
 if(!words.length)throw new Error('Speech dorakaledu');
 snap();if(tr&&cues.length)altCues=JSON.parse(JSON.stringify(cues));window.__en=tr?1:0;cues=buildW(words);window.__en=0;selC=null;render();live.textContent=(tr?'English subtitles ready (Whisper) ':'Whisper captions ready ')+'✓ ('+cues.length+' captions)'}
-catch(e){live.textContent='Whisper work avvaledu: '+((e&&e.message)||e)+'. Idi GitHub Pages / normal browser lo vadandi (claude.ai preview lo block avvachu).'}
+catch(e){{const m='Whisper work avvaledu: '+((e&&e.message)||e);try{toast(m.slice(0,160),7000)}catch(_){}}live.textContent='Whisper work avvaledu: '+((e&&e.message)||e)+'. Idi GitHub Pages / normal browser lo vadandi (claude.ai preview lo block avvachu).'}
 finally{btn.disabled=false}}
 $('gw').onclick=whisperGen;
 /* Auto Trim + word styling */
@@ -1014,7 +1014,7 @@ else if(cues.length||st.file){window.__keepCues=true;vst('Video marala select ch
 render();renderCuts();tlRender()}
 restoredDone=true;lastSaved=snapState()}
 setInterval(saveNow,1500);addEventListener('pagehide',saveNow);addEventListener('beforeunload',saveNow);addEventListener('visibilitychange',()=>{if(document.hidden)saveNow()});
-$('npj').onclick=async()=>{if(!confirm('Kotha project start cheyala? Ippati captions, video clear avutayi.'))return;restoredDone=false;try{localStorage.removeItem(PK);await idbDel('video')}catch(_){}location.reload()};
+$('npj').onclick=async()=>{const nb=$('npj');if(!nb._c){nb._c=1;nb.textContent='Sure? Tap again';setTimeout(()=>{nb._c=0;nb.textContent='New'},3500);return}restoredDone=false;try{localStorage.removeItem(PK);await idbDel('video')}catch(_){}location.reload()};
 setTimeout(restore,0);
 /* English subtitles */
 let altCues=[],nllbP=null;
@@ -1062,6 +1062,12 @@ el.onblur=()=>setTimeout(()=>{if(ced===el)cedClose(true)},120);el.addEventListen
 function capHit(e){const cb=window.__cb,lv=window.__lv;if(!cb||!cb.cue||!lv)return false;const r=ovc.getBoundingClientRect(),px=(e.clientX-r.left-lv.ox)*lv.d,py=(e.clientY-r.top-lv.oy)*lv.d,pad=80*lv.d;return px>=cb.x-pad&&px<=cb.x+cb.w+pad&&py>=cb.y-pad&&py<=cb.y+cb.h+pad}
 $('stg').addEventListener('dblclick',e=>{if(e.target.classList&&e.target.classList.contains('ced'))return;if(capHit(e)){e.preventDefault();cedOpen(window.__cb.cue)}});
 $('stg').addEventListener('mousemove',e=>{if(e.target.classList&&e.target.classList.contains('ced'))return;const h=capHit(e);$('stg').style.cursor=h?'text':'';$('stg').title=h?'Double-click to edit caption':''});
+/* Claude app / sandbox preview handling */
+const SITE_URL='https://captionkitkeshava.vercel.app/';
+const IN_SB=(()=>{let emb=false;try{emb=window.top!==window.self}catch(_){emb=true}const h=location.hostname;return(emb||/claudeusercontent|claude\.(ai|com)|anthropic/i.test(h))&&!/vercel\.app$|github\.io$|localhost$/i.test(h)})();
+window.alert=m=>{try{toast(String(m),6000)}catch(_){}};
+function sbWarn(){const m='Claude app preview lo auto-captions (speech recognition / Whisper) block avutayi. Chrome lo open cheyyandi: captionkitkeshava.vercel.app';$('live').textContent=m;toast(m,9000);const b=$('sbb');if(b)b.scrollIntoView({block:'nearest'})}
+if(IN_SB){const b=document.createElement('div');b.id='sbb';b.className='note';b.style.cssText='border:1px solid var(--ac);border-radius:12px;padding:10px;background:var(--p2);margin-bottom:10px';b.innerHTML='<b>\u26a0 Claude app preview lo unnaru.</b> Ikkada auto-generate (speech recognition / Whisper) block avutundi. Chrome lo open cheyyandi: <a href="'+SITE_URL+'" target="_blank" rel="noopener" style="color:var(--ac);font-weight:700">captionkitkeshava.vercel.app</a> <button id="sbc" style="padding:3px 8px">Copy link</button><br>Ikkada paste transcript + auto-time, trim, templates, export vadochu.';$('t_media').prepend(b);$('sbc').onclick=async()=>{try{await navigator.clipboard.writeText(SITE_URL);toast('Link copy ayyindi \u2713')}catch(_){toast(SITE_URL,9000)}}}
 /* burned-in video export */
 
 let ac=null,gDest=null,gSrc=null,blobOut=null,blobName='';
